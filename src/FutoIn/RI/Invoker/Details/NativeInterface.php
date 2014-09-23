@@ -16,7 +16,7 @@ namespace FutoIn\RI\Invoker\Details;
 class NativeInterface
     implements \FutoIn\Invoker\NativeInterface
 {
-    const MSG_MAXSIZE = 16384;
+    const MSG_MAXSIZE = 65536;
 
     private $curl;
     private $ccmimpl;
@@ -30,68 +30,135 @@ class NativeInterface
         $this->raw_info = $info;
     }
     
-    public function call( \FutoIn\AsyncSteps $as, $name, $params )
+    public function call( \FutoIn\AsyncSteps $as, $name, $params, $upload_data=null, $download_stream=null )
     {
-        $info = $this->raw_info;
-        
-        $req = array(
-            'f' => $info->iface . ': ' . $info->version . ':' . $name,
-            'p' => $params,
-        );
-        
-        // Sign 
+        // Create message
         //---
-        $this->ccmimpl->signMessage( $as, $req );
+        $as->add(function($as) use ( $name, $params ) {
+            $this->ccmimpl->createMessage( $as, $this->raw_info, $name, $params );
+        });
         
         // Perform request
         //---
-        $as->add(function($as, $req){
+        $as->add(function($as, $req) use ( $upload_data, $download_stream ) {
             $curl =  $this->curl;
             
-            curl_setopt( $curl, CURLOPT_URL, $this->raw_info->endpoint );
+            curl_setopt( $curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1 );
+            curl_setopt( $curl, CURLOPT_POST, false );
+            curl_setopt( $curl, CURLOPT_PUT, false );
+            curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, null );
+            curl_setopt( $curl, CURLOPT_POSTFIELDS, null );
+            curl_setopt( $curl, CURLOPT_FILE, null );
+            curl_setopt( $curl, CURLOPT_INFILE, null );
+            curl_setopt( $curl, CURLOPT_PROGRESSFUNCTION, null );
             
-            curl_setopt(
-                $ch,
-                CURLOPT_HTTPHEADER,
-                array(
-                    "Content-Type: application/futoin+json; charset=utf-8",
-                    "Accept: application/futoin+json"
-                )
+            $headers = array(
+                "Content-Type: application/octet-stream",
+                "Accept: application/futoin+json, */*"
             );
             
-            curl_setopt( $curl, CURLOPT_POST, true );
-            curl_setopt( $curl, CURLOPT_POSTFIELDS, json_encode( $req ) );
+            $url = $this->raw_info->endpoint;
+            $req = json_encode( $req, JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE );
+
             
-            // Limit size for security reasons
-            curl_setopt(
-                $curl,
-                CURLOPT_PROGRESSFUNCTION,
-                function( $curl, $full_dlsize, $dlsize ){
-                    return ( $dlsize > self::MSG_MAXSIZE ) ? -1 : 0;
+            if ( $upload_data )
+            {
+                $url .= '?ftnreq='.base64_encode( $req );
+            
+                if ( is_resource( $upload_data ) )
+                {
+                    // Old C-style trick
+                    fseek( $upload_data, -1, SEEK_END );
+                    $upload_size = ftell( $upload_data ) + 1;
+                    fseek( $upload_data, 0, SEEK_SET );
+                    
+                    curl_setopt( $curl, CURLOPT_PUT, true );
+                    curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, "POST" );
+                    curl_setopt( $curl, CURLOPT_INFILE, $upload_data );
+                    curl_setopt( $curl, CURLOPT_INFILESIZE, $upload_size );
+                    $headers['Content-Length'] = $upload_size;
+                    
+                    # Disable cURL-specific 1 second delay (empty 'Expect' does not work)
+                    curl_setopt( $curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0 );
                 }
-            );
+                else
+                {
+                    $headers['Content-Length'] = strlen( $upload_data );
+                    curl_setopt( $curl, CURLOPT_POST, true );
+                    curl_setopt( $curl, CURLOPT_POSTFIELDS, $upload_data );
+                }
+            }
+            else
+            {
+                curl_setopt( $curl, CURLOPT_POST, true );
+                curl_setopt( $curl, CURLOPT_POSTFIELDS, $req );
+            }
             
+            if ( $download_stream )
+            {
+                curl_setopt( $curl, CURLOPT_RETURNTRANSFER, false );
+                curl_setopt( $curl, CURLOPT_FILE, $download_stream );
+            }
+            else
+            {
+                curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
+                
+                // Limit size for security reasons
+                curl_setopt(
+                    $curl,
+                    CURLOPT_PROGRESSFUNCTION,
+                    function( $curl, $full_dlsize, $dlsize ){
+                        return ( $dlsize > self::MSG_MAXSIZE ) ? -1 : 0;
+                    }
+                );
+            }
+            
+
+            curl_setopt( $curl, CURLOPT_HTTPHEADER, $headers );
+            curl_setopt( $curl, CURLOPT_URL, $url );
+            
+            // NOTE: Yep, we are blocking here
             $rsp = curl_exec( $curl );
             
             $http_code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
             $content_type = curl_getinfo( $curl, CURLINFO_CONTENT_TYPE );
+
             
-            if ( ( $http_code !== 200 ) ||
-                 ( $content_type !== 'application/futoin+json' ) )
+            if ( $http_code !== 200 )
             {
+                $as->error_info = "HTTP:$http_code RSP:$rsp CURL:".curl_error( $curl );
                 $as->error( \FutoIn\Error::CommError );
+            }
+            elseif ( $download_stream )
+            {
+                if ( $rsp )
+                {
+                    $as->success( true );
+                }
+                else
+                {
+                    $as->error_info = "CURL:".curl_error( $curl );
+                    $as->error( \FutoIn\Error::CommError );
+                }
+            }
+            elseif ( $content_type === 'application/futoin+json' )
+            {
+                $rsp = json_decode( $rsp );
+                
+                if ( $rsp )
+                {
+                    $this->ccmimpl->onMessageResponse( $as, $rsp );
+                }
+                else
+                {
+                    $as->error_info = "JSON:".json_last_error_msg();
+                    $as->error( \FutoIn\Error::CommError );
+                }
             }
             else
             {
-                $rsp = json_parse( $rsp );
-                $this->ccmimpl->checkMessageSignature( $as, $rsp );
+                $this->ccmimpl->onDataResponse( $as, $rsp );
             }
-        });
-        
-        // Process response
-        //---
-        $as->add(function( $as, $rsp ){
-            $as->success( $rsp->r );
         });
     }
     
@@ -105,10 +172,6 @@ class NativeInterface
         return $this->iface_info;
     }
     
-    public function callData( \FutoIn\AsyncSteps $as, $name, $params, array $upload_data )
-    {
-    }
-    
     public function burst()
     {
         throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
@@ -116,6 +179,7 @@ class NativeInterface
     
     public function __call( $name, $args )
     {
+        return $this->call( $args[0], $name, $args[1] );
     }
 }
 

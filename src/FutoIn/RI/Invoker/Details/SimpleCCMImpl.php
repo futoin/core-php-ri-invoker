@@ -16,7 +16,6 @@ class SimpleCCMImpl
         curl_setopt( $curl, CURLOPT_FORBID_REUSE, FALSE );
         curl_setopt( $curl, CURLOPT_FRESH_CONNECT, FALSE );
         curl_setopt( $curl, CURLOPT_NETRC, FALSE );
-        curl_setopt( $curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1 );
         curl_setopt( $curl, CURLOPT_SSLVERSION, 3 );
         curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, TRUE );
         curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, FALSE );
@@ -27,7 +26,6 @@ class SimpleCCMImpl
         curl_setopt( $curl, CURLOPT_TIMEOUT_MS, 30000 );
         
         curl_setopt( $curl, CURLOPT_BINARYTRANSFER, true );
-        curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
        
         if ( $curl_opts )
         {
@@ -45,15 +43,29 @@ class SimpleCCMImpl
     }
 
     
-    public function onRegister( $name, $info ){}
+    public function onRegister( \FutoIn\AsyncSteps $as, $name, $info ){}
     
-    public function signMessage( \FutoIn\AsyncSteps $as, &$req )
+    public function createMessage( \FutoIn\AsyncSteps $as, $info, $name, &$params )
     {
-        $req['forcersp'] = true;
+        $req = array(
+            'f' => $info->iface . ':' . $info->version . ':' . $name,
+            'p' => $params,
+            'forcersp' => true,
+        );
+        
+        // TODO: add signature
+
         $as->success( $req );
     }
     
-    public function checkMessageSignature( \FutoIn\AsyncSteps $as, &$rsp )
+    public function onMessageResponse( \FutoIn\AsyncSteps $as, &$rsp )
+    {
+        // TODO: check signature
+    
+        $as->success( $rsp->r );
+    }
+    
+    public function onDataResponse( \FutoIn\AsyncSteps $as, &$rsp )
     {
         $as->success( $rsp );
     }

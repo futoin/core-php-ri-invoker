@@ -60,7 +60,9 @@ class SimpleCCM
         
         $this->iface_info[$name] = $info;
         
-        $this->impl->onRegister( $name, $info );
+        $this->impl->onRegister( $as, $name, $info );
+        
+        $as->add(function($as){ $as->success(); });
     }
     
     /** @see \FutoIn\SimpleCCM */

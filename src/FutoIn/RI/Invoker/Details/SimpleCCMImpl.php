@@ -10,7 +10,7 @@ class SimpleCCMImpl
 {
     public $curl;
     
-    public function __construct( $curl_opts = null )
+    public function __construct( VaultProvider $vault=null, $curl_opts = null )
     {
         $curl = curl_init();
         curl_setopt( $curl, CURLOPT_FORBID_REUSE, FALSE );

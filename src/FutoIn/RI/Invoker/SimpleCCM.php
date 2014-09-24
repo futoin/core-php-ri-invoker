@@ -28,9 +28,9 @@ class SimpleCCM
      *
      * @param array $curl_opts - Name-Value pairs for curl_setopt()
      */
-    public function __construct( $curl_opts = null )
+    public function __construct( VaultProvider $vault=null, $curl_opts = null )
     {
-        $this->impl = new Details\SimpleCCMImpl( $curl_opts );
+        $this->impl = new Details\SimpleCCMImpl( $vault, $curl_opts );
     }
 
     /** @see \FutoIn\SimpleCCM */

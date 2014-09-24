@@ -318,6 +318,98 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
         $this->assertTrue( $this->as->executed );
     }
     
+    public function testCallAliasException()
+    {
+        $this->ccm->register( $this->as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+        $this->ccm->alias( 'srv', 'asrv' );
+        
+        $this->as->add(
+            function($as){
+                $iface = $this->ccm->iface( 'asrv' );
+                $iface->call( $as, 'throw', array( 'errtype' => 'MyErrorType' ) );
+            },
+            function( $as, $err ){
+                $this->assertEquals( 'MyErrorType', $err );
+                $as->executed = true;
+            }
+        )->add(
+            function( $as, $rsp ){
+                $as->executed = false;
+            }
+        );
+        
+        $this->as->run();
+        $this->assertTrue( $this->as->executed );
+    }
+    
+    public function testCallNotImplemented()
+    {
+        $this->ccm->register( $this->as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+        
+        $this->as->add(
+            function($as){
+                $iface = $this->ccm->iface( 'srv' );
+                $iface->call( $as, 'notimpl', array() );
+            },
+            function( $as, $err ){
+                $this->assertEquals( 'NotImplemented', $err );
+                $as->executed = true;
+            }
+        )->add(
+            function( $as, $rsp ){
+                $as->executed = false;
+            }
+        );
+        
+        $this->as->run();
+        $this->assertTrue( $this->as->executed );
+    }
+    
+    public function testCallUnknown()
+    {
+        $this->ccm->register( $this->as, 'srv', 'srv.testa:1.1', 'http://localhost:12345/ftn' );
+        
+        $this->as->add(
+            function($as){
+                $iface = $this->ccm->iface( 'srv' );
+                $iface->call( $as, 'notimpl', array() );
+            },
+            function( $as, $err ){
+                $this->assertEquals( 'UnknownInterface', $err );
+                $as->executed = true;
+            }
+        )->add(
+            function( $as, $rsp ){
+                $as->executed = false;
+            }
+        );
+        
+        $this->as->run();
+        $this->assertTrue( $this->as->executed );
+    }
+    
+    public function testCallNotSupportedVersion()
+    {
+        $this->ccm->register( $this->as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+        
+        $this->as->add(
+            function($as){
+                $iface = $this->ccm->iface( 'srv' );
+                $iface->call( $as, 'notversion', array() );
+            },
+            function( $as, $err ){
+                $this->assertEquals( 'NotSupportedVersion', $err );
+                $as->executed = true;
+            }
+        )->add(
+            function( $as, $rsp ){
+                $as->executed = false;
+            }
+        );
+        
+        $this->as->run();
+        $this->assertTrue( $this->as->executed );
+    }
     /**
      * @medium
      */
@@ -335,6 +427,14 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
             $this->testCallDownloadStream();
             $this->ccm->unRegister( 'srv' );
             $this->testCallOutData();
+            $this->ccm->unRegister( 'srv' );
+            $this->testCallAliasException();
+            $this->ccm->unRegister( 'srv' );
+            $this->testCallNotImplemented();
+            $this->ccm->unRegister( 'srv' );
+            $this->testCallUnknown();
+            $this->ccm->unRegister( 'srv' );
+            $this->testCallNotSupportedVersion();
             $this->ccm->unRegister( 'srv' );
         }
     }

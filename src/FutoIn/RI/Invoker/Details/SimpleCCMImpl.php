@@ -61,8 +61,15 @@ class SimpleCCMImpl
     public function onMessageResponse( \FutoIn\AsyncSteps $as, &$rsp )
     {
         // TODO: check signature
-    
-        $as->success( $rsp->r );
+        
+        if ( isset( $rsp->e ) )
+        {
+            $as->error( $rsp->e );
+        }
+        else
+        {
+            $as->success( $rsp->r );
+        }
     }
     
     public function onDataResponse( \FutoIn\AsyncSteps $as, &$rsp )

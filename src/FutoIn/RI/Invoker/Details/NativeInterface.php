@@ -177,9 +177,9 @@ class NativeInterface
         throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
     }
     
-    public function __call( $name, $args )
+    public function bindDerivedKey( \FutoIn\AsyncSteps $as )
     {
-        return $this->call( $args[0], $name, $args[1] );
+        throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
     }
 }
 

@@ -88,7 +88,13 @@ class SimpleCCM
     {
         if ( array_key_exists( $name, $this->iface_info ) )
         {
+            $info = &$this->iface_info[$name];
             unset( $this->iface_info[$name] );
+            
+            if ( $info->aliases ) foreach ( $info->aliases as $v )
+            {
+                unset( $this->iface_info[$v] );
+            }
         }
         else
         {
@@ -147,6 +153,15 @@ class SimpleCCM
         }
         
         $this->iface_info[$alias] = &$this->iface_info[$name];
+        
+        if ( is_array( $this->iface_info[$name]->aliases ) )
+        {
+            $this->iface_info[$name]->aliases[] = $alias;
+        }
+        else
+        {
+            $this->iface_info[$name]->aliases = [$alias];
+        }
     }
 }
 
@@ -164,6 +179,7 @@ class SimpleCCM_IfaceInfo
     public $creds = null;
     public $def = null;
     public $instance = null;
+    public $aliases = null;
     
     public $inherits = null;
     public $funcs = null;

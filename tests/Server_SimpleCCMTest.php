@@ -18,6 +18,17 @@ function response( $req, $rspparams )
     die();
 }
 
+//---
+function response_throw( $req, $err )
+{
+    header('Content-Type: application/futoin+json');
+    $rsp = [
+        'e' => $err
+    ];
+    echo json_encode( $rsp, JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE );
+    die();
+}
+
 // Check method
 //---
 if ( $_SERVER['REQUEST_METHOD'] !== 'POST' )
@@ -90,6 +101,15 @@ switch ( $f[0] )
                 header('Content-Type: text/plain; charset=utf8');
                 echo $req->p->ping;
                 die();
+                
+            case 'throw':
+                response_throw( $req, $req->p->errtype );
+                
+            case 'notimpl':
+                response_throw( $req, 'NotImplemented' );
+                
+            case 'notversion':
+                response_throw( $req, 'NotSupportedVersion' );
         }
 
         break;
@@ -105,4 +125,4 @@ switch ( $f[0] )
 
 // Else fail
 //---
-fail( 'End '.print_r($req,true) );
+response_throw( $req, 'UnknownInterface' );

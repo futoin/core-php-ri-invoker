@@ -13,7 +13,7 @@
     "require" : {
         "php" : ">=5.5",
         "futoin/core-php-api" : "@dev",
-        "futoin/core-php-ri-asyncsteps" : "@dev",
+        "futoin/core-php-ri-asyncsteps" : "@dev"
     },
     "require-dev" : {
         "phpunit/phpunit": ">=4.1",

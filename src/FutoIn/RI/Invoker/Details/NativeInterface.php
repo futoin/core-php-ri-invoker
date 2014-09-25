@@ -18,14 +18,12 @@ class NativeInterface
 {
     const MSG_MAXSIZE = 65536;
 
-    private $curl;
     private $ccmimpl;
     private $raw_info;
     private $iface_info = null;
     
     public function __construct( $ccmimpl, $info )
     {
-        $this->curl = $ccmimpl->curl;
         $this->ccmimpl = $ccmimpl;
         $this->raw_info = $info;
     }
@@ -41,16 +39,22 @@ class NativeInterface
         // Perform request
         //---
         $as->add(function($as, $req) use ( $upload_data, $download_stream ) {
-            $curl =  $this->curl;
+            $curl_opts = array(
+                CURLOPT_FORBID_REUSE => FALSE,
+                CURLOPT_FRESH_CONNECT => FALSE,
+                CURLOPT_NETRC => FALSE,
+                CURLOPT_SSLVERSION => 3,
+                CURLOPT_SSL_VERIFYPEER => TRUE,
+                CURLOPT_FOLLOWLOCATION => FALSE,
+
+                CURLOPT_CONNECTTIMEOUT_MS => 3000,
+                CURLOPT_TIMEOUT_MS => 30000,
+
+                CURLOPT_BINARYTRANSFER => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1
+            ) + $this->ccmimpl->curl_opts;
             
-            curl_setopt( $curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1 );
-            curl_setopt( $curl, CURLOPT_POST, false );
-            curl_setopt( $curl, CURLOPT_PUT, false );
-            curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, null );
-            curl_setopt( $curl, CURLOPT_POSTFIELDS, null );
-            curl_setopt( $curl, CURLOPT_FILE, null );
-            curl_setopt( $curl, CURLOPT_INFILE, null );
-            curl_setopt( $curl, CURLOPT_PROGRESSFUNCTION, null );
+            $curl = curl_init();
             
             $headers = array(
                 "Content-Type: application/octet-stream",
@@ -72,93 +76,101 @@ class NativeInterface
                     $upload_size = ftell( $upload_data ) + 1;
                     fseek( $upload_data, 0, SEEK_SET );
                     
-                    curl_setopt( $curl, CURLOPT_PUT, true );
-                    curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, "POST" );
-                    curl_setopt( $curl, CURLOPT_INFILE, $upload_data );
-                    curl_setopt( $curl, CURLOPT_INFILESIZE, $upload_size );
+                    $curl_opts[ CURLOPT_PUT ] = true;
+                    $curl_opts[ CURLOPT_CUSTOMREQUEST ] = "POST";
+                    $curl_opts[ CURLOPT_INFILE ] = $upload_data;
+                    $curl_opts[ CURLOPT_INFILESIZE ] = $upload_size;
                     $headers['Content-Length'] = $upload_size;
                     
                     # Disable cURL-specific 1 second delay (empty 'Expect' does not work)
-                    curl_setopt( $curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0 );
+                    $curl_opts[ CURLOPT_HTTP_VERSION ] = CURL_HTTP_VERSION_1_0;
                 }
                 else
                 {
                     $headers['Content-Length'] = strlen( $upload_data );
-                    curl_setopt( $curl, CURLOPT_POST, true );
-                    curl_setopt( $curl, CURLOPT_POSTFIELDS, $upload_data );
+                    $curl_opts[ CURLOPT_POST ] = true;
+                    $curl_opts[ CURLOPT_POSTFIELDS ] = $upload_data;
                 }
             }
             else
             {
-                curl_setopt( $curl, CURLOPT_POST, true );
-                curl_setopt( $curl, CURLOPT_POSTFIELDS, $req );
+                $curl_opts[ CURLOPT_POST ] = true;
+                $curl_opts[ CURLOPT_POSTFIELDS ] = $req;
             }
             
             if ( $download_stream )
             {
-                curl_setopt( $curl, CURLOPT_RETURNTRANSFER, false );
-                curl_setopt( $curl, CURLOPT_FILE, $download_stream );
+                $curl_opts[ CURLOPT_FILE ] = $download_stream;
             }
             else
             {
-                curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
+                $curl_opts[ CURLOPT_RETURNTRANSFER ] = true;
                 
                 // Limit size for security reasons
-                curl_setopt(
-                    $curl,
-                    CURLOPT_PROGRESSFUNCTION,
+                $curl_opts[ CURLOPT_PROGRESSFUNCTION ] =
                     function( $curl, $full_dlsize, $dlsize ){
                         return ( $dlsize > self::MSG_MAXSIZE ) ? -1 : 0;
-                    }
-                );
+                    };
             }
             
 
-            curl_setopt( $curl, CURLOPT_HTTPHEADER, $headers );
-            curl_setopt( $curl, CURLOPT_URL, $url );
+            $curl_opts[ CURLOPT_HTTPHEADER ] = $headers;
+            $curl_opts[ CURLOPT_URL ] = $url;
             
-            // NOTE: Yep, we are blocking here
-            $rsp = curl_exec( $curl );
+            curl_setopt_array( $curl, $curl_opts );
             
-            $http_code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
-            $content_type = curl_getinfo( $curl, CURLINFO_CONTENT_TYPE );
+            // cURL multi
+            //---
+            $as->setTimeout( $curl_opts[CURLOPT_TIMEOUT_MS] * 1e3 );
 
-            
-            if ( $http_code !== 200 )
-            {
-                $as->error_info = "HTTP:$http_code RSP:$rsp CURL:".curl_error( $curl );
-                $as->error( \FutoIn\Error::CommError );
-            }
-            elseif ( $download_stream )
-            {
-                if ( $rsp )
-                {
-                    $as->success( true );
-                }
-                else
-                {
-                    $as->error_info = "CURL:".curl_error( $curl );
-                    $as->error( \FutoIn\Error::CommError );
-                }
-            }
-            elseif ( $content_type === 'application/futoin+json' )
-            {
-                $rsp = json_decode( $rsp );
+            $as->add(function($as) use ( $curl ){
+                $this->ccmimpl->multiCurlAdd( $as, $curl );
+            });
+
+            $as->add(function($as, $curl, $info ) use ($download_stream) {
+                $http_code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
+                $content_type = curl_getinfo( $curl, CURLINFO_CONTENT_TYPE );
+                $error = curl_error( $curl );
+                curl_close( $curl );
                 
-                if ( $rsp )
+                //---
+
+                if ( $http_code !== 200 )
                 {
-                    $this->ccmimpl->onMessageResponse( $as, $rsp );
+                    $as->error_info = "HTTP:$http_code RSP:$rsp CURL:$error";
+                    $as->error( \FutoIn\Error::CommError );
+                }
+                elseif ( $download_stream )
+                {
+                    if ( $info['result'] === CURLE_OK )
+                    {
+                        $as->success( true );
+                    }
+                    else
+                    {
+                        $as->error_info = "CURL:$error";
+                        $as->error( \FutoIn\Error::CommError );
+                    }
+                }
+                elseif ( $content_type === 'application/futoin+json' )
+                {
+                    $rsp = json_decode( $as->_futoin_response );
+                    
+                    if ( $rsp )
+                    {
+                        $this->ccmimpl->onMessageResponse( $as, $rsp );
+                    }
+                    else
+                    {
+                        $as->error_info = "JSON:".json_last_error_msg();
+                        $as->error( \FutoIn\Error::CommError );
+                    }
                 }
                 else
                 {
-                    $as->error_info = "JSON:".json_last_error_msg();
-                    $as->error( \FutoIn\Error::CommError );
+                    $this->ccmimpl->onDataResponse( $as );
                 }
-            }
-            else
-            {
-                $this->ccmimpl->onDataResponse( $as, $rsp );
-            }
+            });
         });
     }
     

@@ -200,7 +200,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
                 $iface->call( $as, 'data', array( 'ping' => 'PINGPING' ), $upload_data );
             },
             function( $as, $err ){
-                echo $as->error_info;
                 $as->executed1 = false;
             }
         )->add(
@@ -273,7 +272,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
                 $iface->call( $as, 'data', array( 'ping' => 'PINGPING' ), 'MYDATA-HERE', $as->myfile );
             },
             function( $as, $err ){
-                echo $as->error_info;
                 $as->executed1 = false;
             }
         )->add(
@@ -410,13 +408,56 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
         $this->as->run();
         $this->assertTrue( $this->as->executed );
     }
+    
+    public function testCallParallel()
+    {   
+        $this->as->add(
+            function($as){
+                $iface = $this->ccm->iface( 'srv' );
+                $iface->call( $as, 'test', array( 'ping' => 'PINGPING' ) );
+            },
+            function( $as, $err ){
+                $as->executed = false;
+            }
+        )->add(
+            function( $as, $rsp ){
+                $this->assertEquals( 'PONGPONG', $rsp->pong );
+                $this->assertEquals( 'PINGPING', $rsp->ping );
+                $as->executed = true;
+            }
+        );
+    
+        $asl = array();
+        
+        for ( $i = 0; $i < 10; ++$i )
+        {
+            $asl[] = clone $this->as;
+        }
+        
+        $this->as->cancel();
+    
+        $this->ccm->register( $asl[0], 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+      
+        foreach( $asl as $as )
+        {
+            $as->execute();
+        }
+        
+        \FutoIn\RI\AsyncToolTest::run();
+        
+        foreach( $asl as $i => $as )
+        {
+            $this->assertTrue( $as->executed, "Failed on $i" );
+        }
+    }
+    
     /**
      * @medium
      */
     public function testCallComplex()
     {
         # Make sure re-used cURL works OK
-        for ( $i = 0; $i < 3; ++$i )
+        for ( $i = 0; $i < 5; ++$i )
         {
             $this->testCall();
             $this->ccm->unRegister( 'srv' );
@@ -435,6 +476,8 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
             $this->testCallUnknown();
             $this->ccm->unRegister( 'srv' );
             $this->testCallNotSupportedVersion();
+            $this->ccm->unRegister( 'srv' );
+            $this->testCallParallel();
             $this->ccm->unRegister( 'srv' );
         }
     }

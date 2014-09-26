@@ -7,7 +7,7 @@ Current goal is to provide reference implementation for standard PHP model of "o
 
 Reference implementation of:
  
-    FTN6: FutoIn Invoker Concept
+    FTN7: FutoIn Invoker Concept
     Version: 1.0
     
 Spec: http://specs.futoin.org/final/preview/ftn7_iface_invoker_concept-1.html

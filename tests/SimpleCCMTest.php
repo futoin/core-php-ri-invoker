@@ -51,6 +51,10 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
         $this->ccm = null;
     }
     
+    /**
+     * @medium
+     * Just give a little more time on initial load
+     */
     public function testRegister()
     {
         $this->ccm->register( $this->as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );

@@ -50,7 +50,7 @@ class SimpleCCM
             throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
         }
         
-        $info = new SimpleCCM_IfaceInfo;
+        $info = new Details\RegistrationInfo;
         $info->iface = $ifacever[0];
         $info->version = $ifacever[1];
         $info->mjrver = $mjrmnr[0];
@@ -163,25 +163,4 @@ class SimpleCCM
             $this->iface_info[$name]->aliases = [$alias];
         }
     }
-}
-
-/**
- * @ignore
- * @internal
- */
-class SimpleCCM_IfaceInfo
-{
-    public $iface = null;
-    public $version = null;
-    public $mjrver = null;
-    public $mnrver = null;
-    public $endpoint = null;
-    public $creds = null;
-    public $def = null;
-    public $instance = null;
-    public $aliases = null;
-    
-    public $inherits = null;
-    public $funcs = null;
-    public $constraints = null;
 }

@@ -178,7 +178,7 @@ class NativeInterface
     {
         if ( !$this->iface_info )
         {
-            $this->iface_info = new NativeInterface_InterfaceInfo( $this->raw_info );
+            $this->iface_info = new InterfaceInfo( $this->raw_info );
         }
         
         return $this->iface_info;
@@ -192,44 +192,5 @@ class NativeInterface
     public function bindDerivedKey( \FutoIn\AsyncSteps $as )
     {
         throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
-    }
-}
-
-/**
- * @internal
- */
-class NativeInterface_InterfaceInfo
-    implements \FutoIn\InterfaceInfo
-{
-    private $raw_info;
-    
-    public function __construct( $rawinfo )
-    {
-        $this->raw_info = $rawinfo;
-    }
-    
-    public function name()
-    {
-        return $this->raw_info->iface;
-    }
-    
-    public function version()
-    {
-        return $this->raw_info->version;
-    }
-    
-    public function inherits()
-    {
-        return $this->raw_info->inherits;
-    }
-    
-    public function funcs()
-    {
-        return $this->raw_info->funcs;
-    }
-    
-    public function constraints()
-    {
-        return $this->raw_info->constraints;
     }
 }

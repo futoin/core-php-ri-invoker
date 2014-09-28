@@ -50,6 +50,9 @@ class SimpleCCM
             throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
         }
         
+        // Silently map WebSockets to HTTP/HTTPS as per FTN7 spec
+        $endpoint = preg_replace( '/^ws(s?):\/\//', 'http${1}://', $endpoint );
+        
         $info = new Details\RegistrationInfo;
         $info->iface = $ifacever[0];
         $info->version = $ifacever[1];
@@ -60,9 +63,7 @@ class SimpleCCM
         
         $this->iface_info[$name] = $info;
         
-        $this->impl->onRegister( $as, $name, $info );
-        
-        $as->add(function($as){ $as->success(); });
+        $this->impl->onRegister( $as, $info );
     }
     
     /** @see \FutoIn\SimpleCCM */
@@ -116,6 +117,24 @@ class SimpleCCM
     
     /** @see \FutoIn\SimpleCCM */
     public function burst()
+    {
+        throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+    }
+    
+    /** @see \FutoIn\SimpleCCM */
+    public function cacheL1()
+    {
+        throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+    }
+
+    /** @see \FutoIn\SimpleCCM */
+    public function cacheL2()
+    {
+        throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+    }
+
+    /** @see \FutoIn\SimpleCCM */
+    public function cacheL3()
     {
         throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
     }

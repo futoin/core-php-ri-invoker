@@ -92,7 +92,10 @@ class SimpleCCMImpl
     }
 
     
-    public function onRegister( \FutoIn\AsyncSteps $as, $name, $info ){}
+    public function onRegister( \FutoIn\AsyncSteps $as, $info )
+    {
+        $as->success();
+    }
     
     public function createMessage( \FutoIn\AsyncSteps $as, $info, $name, &$params )
     {
@@ -102,15 +105,16 @@ class SimpleCCMImpl
             'forcersp' => true,
         );
         
-        // TODO: add signature
-
+        $this->addSignature( $as, $info, $name, $req );
+    }
+    
+    public function addSignature( \FutoIn\AsyncSteps $as, $info, $name, &$req )
+    {
         $as->success( $req );
     }
     
-    public function onMessageResponse( \FutoIn\AsyncSteps $as, &$rsp )
+    public function onMessageResponse( \FutoIn\AsyncSteps $as, $info, $rsp )
     {
-        // TODO: check signature
-        
         if ( isset( $rsp->e ) )
         {
             $as->error( $rsp->e );
@@ -121,7 +125,7 @@ class SimpleCCMImpl
         }
     }
     
-    public function onDataResponse( \FutoIn\AsyncSteps $as )
+    public function onDataResponse( \FutoIn\AsyncSteps $as, $info )
     {
         $as->success( $as->_futoin_response );
     }

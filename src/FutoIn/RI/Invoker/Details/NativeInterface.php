@@ -158,7 +158,7 @@ class NativeInterface
                     
                     if ( $rsp )
                     {
-                        $this->ccmimpl->onMessageResponse( $as, $rsp );
+                        $this->ccmimpl->onMessageResponse( $as, $this->raw_info, $rsp );
                     }
                     else
                     {
@@ -168,7 +168,7 @@ class NativeInterface
                 }
                 else
                 {
-                    $this->ccmimpl->onDataResponse( $as );
+                    $this->ccmimpl->onDataResponse( $as, $this->raw_info );
                 }
             });
         });

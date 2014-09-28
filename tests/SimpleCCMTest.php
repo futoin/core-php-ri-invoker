@@ -57,8 +57,15 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
      */
     public function testRegister()
     {
-        $this->ccm->register( $this->as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
-        $this->ccm->register( $this->as, 'testB', 'test.b:2.3', 'http://localhost:12345/ftn/', array( 'user'=>'userX', 'password'=>'passX' ) );
+        $this->as->add(
+            function($as){
+                $this->ccm->register( $as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
+                $this->ccm->register( $as, 'testB', 'test.b:2.3', 'http://localhost:12345/ftn/', array( 'user'=>'userX', 'password'=>'passX' ) );
+            },
+            function($as,$err){
+                $this->assertFalse( true );
+            }
+        );
         $this->as->run();
         
         $ifa = $this->ccm->iface( 'testA' );
@@ -77,28 +84,56 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
         $this->ccm->assertIface( 'testB', 'test.b:2.2' );
     }
     
-    /**
-     * @expectedException \FutoIn\Error
-     */
     public function testRegisterFail1()
     {
-        $this->ccm->register( $this->as, 'testA', 'test.a:1.', 'http://localhost:12345/ftn' );
+        $this->as->add(
+            function($as){
+                $this->ccm->register( $as, 'testA', 'test.a:1.', 'http://localhost:12345/ftn' );
+            },
+            function( $as, $err ){
+                $as->executed = true;
+                $this->assertEquals( "InvokerError", $err );
+            }
+        )->add(function($as){
+            $as->executed = false;
+        });
+        $this->as->run();
+        $this->assertTrue( $this->as->executed );
     }
     
-    /**
-     * @expectedException \FutoIn\Error
-     */
     public function testRegisterFail2()
     {
-        $this->ccm->register( $this->as, 'testA', 'test.a:2', 'http://localhost:12345/ftn' );
+        $this->as->add(
+            function($as){
+                $this->ccm->register( $as, 'testA', 'test.a:2', 'http://localhost:12345/ftn' );
+            },
+            function( $as, $err ){
+                $as->executed = true;
+                $this->assertEquals( "InvokerError", $err );
+            }
+        )->add(function($as){
+            $as->executed = false;
+        });
+        $this->as->run();
+        $this->assertTrue( $this->as->executed );
     }
 
-    /**
-     * @expectedException \FutoIn\Error
-     */
     public function testRegisterFail3()
     {
-        $this->ccm->register( $this->as, 'testA', 'test.a', 'http://localhost:12345/ftn' );
+        $this->as->add(
+            function($as){
+                $this->ccm->register( $as, 'testA', 'test.a', 'http://localhost:12345/ftn' );
+            },
+            function( $as, $err ){
+                $as->executed = true;
+                $this->assertEquals( "InvokerError", $err );
+            }
+        )->add(function($as){
+            $as->executed = false;
+        });
+        $this->as->run();
+        
+        $this->assertTrue( $this->as->executed );
     }
 
     
@@ -107,8 +142,11 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
      */
     public function testAssertIfaceFail1()
     {
-        $this->ccm->register( $this->as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
+        $this->as->add(function($as){
+            $this->ccm->register( $as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
+        });
         $this->as->run();
+
         $this->ccm->assertIface( 'testA', 'test.a:1.2' );
     }
     
@@ -117,7 +155,11 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
      */
     public function testAssertIfaceFail2()
     {
-        $this->ccm->register( $this->as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
+        $this->as->add(function($as){
+            $this->ccm->register( $as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
+        });
+        $this->as->run();
+            
         $this->ccm->assertIface( 'testA', 'test.b:1.1' );
     }
     
@@ -126,13 +168,21 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
      */
     public function testAssertIfaceFail3()
     {
-        $this->ccm->register( $this->as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
+        $this->as->add(function($as){
+            $this->ccm->register( $as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
+        });
+        $this->as->run();
+            
         $this->ccm->assertIface( 'testA', 'test.a:2.2' );
     }
     
     public function testUnRegister()
     {
-        $this->ccm->register( $this->as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
+        $this->as->add(function($as){
+            $this->ccm->register( $as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
+        });
+        $this->as->run();
+        
         $this->ccm->iface( 'testA' );
         $this->ccm->unRegister( 'testA' );
         
@@ -149,19 +199,32 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     
     public function testDefense()
     {
-        $this->ccm->register( $this->as, '#defense', 'test.a:1.1', 'http://localhost:12345/ftn' );
+        $this->as->add(function($as){
+            $this->ccm->register( $as, '#defense', 'test.a:1.1', 'http://localhost:12345/ftn' );
+        });
+        $this->as->run();
+
         $this->assertEquals( "test.a", $this->ccm->defense()->ifaceInfo()->name() );
     }
 
     public function testLog()
     {
-        $this->ccm->register( $this->as, '#log', 'test.a:1.1', 'http://localhost:12345/ftn' );
+        $this->as->add(function($as){
+            $this->ccm->register( $as, '#log', 'test.a:1.1', 'http://localhost:12345/ftn' );
+        });
+        $this->as->run();
+            
         $this->assertEquals( "test.a", $this->ccm->log()->ifaceInfo()->name() );
     }
     
     public function testAlias()
     {
-        $this->ccm->register( $this->as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
+        $this->as->add(function($as){
+            $this->ccm->register( $as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
+        });
+        $this->as->run();
+
+            
         $this->ccm->alias( 'testA', 'testB' );
         $this->assertEquals( "test.a", $this->ccm->iface( 'testB' )->ifaceInfo()->name() );
     }
@@ -171,9 +234,9 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     //=================================
     public function testCall()
     {
-        $this->ccm->register( $this->as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
-        
-        $this->as->add(
+        $this->as->add(function( $as ){
+            $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+        })->add(
             function($as){
                 $iface = $this->ccm->iface( 'srv' );
                 $iface->call( $as, 'test', array( 'ping' => 'PINGPING' ) );
@@ -195,8 +258,10 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     
     public function callDataCommon( $upload_data )
     {
-        $this->ccm->register( $this->as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
-        
+        $this->as->add(function( $as ){
+            $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+        });
+      
         # Output data
         $this->as->add(
             function($as) use ( $upload_data ) {
@@ -266,7 +331,9 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     
     public function testCallDownloadStream()
     {
-        $this->ccm->register( $this->as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+        $this->as->add(function( $as ){
+            $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+        });
         
         # Output data
         $this->as->add(
@@ -299,7 +366,9 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     
     public function testCallOutData()
     {
-        $this->ccm->register( $this->as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+        $this->as->add(function( $as ){
+            $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+        });
         
         $this->as->add(
             function($as){
@@ -322,8 +391,10 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     
     public function testCallAliasException()
     {
-        $this->ccm->register( $this->as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
-        $this->ccm->alias( 'srv', 'asrv' );
+        $this->as->add(function( $as ){
+            $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+            $this->ccm->alias( 'srv', 'asrv' );
+        });
         
         $this->as->add(
             function($as){
@@ -346,7 +417,9 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     
     public function testCallNotImplemented()
     {
-        $this->ccm->register( $this->as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+        $this->as->add(function( $as ){
+            $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+        });
         
         $this->as->add(
             function($as){
@@ -369,7 +442,10 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     
     public function testCallUnknown()
     {
-        $this->ccm->register( $this->as, 'srv', 'srv.testa:1.1', 'http://localhost:12345/ftn' );
+        $this->as->add(function( $as ){
+            $this->ccm->register( $as, 'srv', 'srv.testa:1.1', 'http://localhost:12345/ftn' );
+        });
+
         
         $this->as->add(
             function($as){
@@ -392,7 +468,9 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     
     public function testCallNotSupportedVersion()
     {
-        $this->ccm->register( $this->as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+        $this->as->add(function( $as ){
+            $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+        });
         
         $this->as->add(
             function($as){
@@ -415,7 +493,14 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     
     public function testCallParallel()
     {   
-        $this->as->add(
+        $this->as->add(function($as){
+            $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+        });
+        $this->as->run();
+        
+        $model_as = new \FutoIn\RI\AsyncSteps;
+        
+        $model_as->add(
             function($as){
                 $iface = $this->ccm->iface( 'srv' );
                 $iface->call( $as, 'test', array( 'ping' => 'PINGPING' ) );
@@ -435,12 +520,8 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
         
         for ( $i = 0; $i < 10; ++$i )
         {
-            $asl[] = clone $this->as;
+            $asl[] = clone $model_as;
         }
-        
-        $this->as->cancel();
-    
-        $this->ccm->register( $asl[0], 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
       
         foreach( $asl as $as )
         {

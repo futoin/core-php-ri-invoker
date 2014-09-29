@@ -79,9 +79,7 @@ class SimpleCCM
         
         $this->iface_info[$name] = $info;
         
-        $as->add(function($as){
-            $as->success();
-        });
+        $as->successStep();
     }
     
     /** @see \FutoIn\SimpleCCM */

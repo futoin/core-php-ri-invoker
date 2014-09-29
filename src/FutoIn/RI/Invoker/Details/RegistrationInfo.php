@@ -20,7 +20,7 @@ class RegistrationInfo
     public $endpoint = null;
     public $creds = null;
     public $def = null;
-    public $instance = null;
+    public $impl = null;
     public $aliases = null;
     
     public $inherits = null;

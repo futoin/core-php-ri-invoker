@@ -21,6 +21,7 @@ class SimpleCCM
     implements \FutoIn\Invoker\SimpleCCM
 {
     protected $iface_info = [];
+    protected $iface_impl = [];
     protected $impl = null;
     
     /**
@@ -61,6 +62,17 @@ class SimpleCCM
         $info->endpoint = $endpoint;
         $info->creds = $credentials;
         
+        $url = parse_url( $endpoint );
+        
+        if ( $url['scheme'] === 'self' )
+        {
+            $info->impl = str_replace( '.', '\\', $url['host'] );
+        }
+        else
+        {
+            $info->impl = "\FutoIn\RI\Invoker\Details\NativeInterface";
+        }
+        
         $this->iface_info[$name] = $info;
         
         $this->impl->onRegister( $as, $info );
@@ -74,14 +86,13 @@ class SimpleCCM
             throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
         }
         
-        $iface = $this->iface_info[$name];
-        
-        if ( $iface->instance === null )
+        if ( !isset( $this->iface_impl[$name] ) )
         {
-            $iface->instance = new \FutoIn\RI\Invoker\Details\NativeInterface( $this->impl, $iface );
+            $info = $this->iface_info[$name];
+            $this->iface_impl[$name] = new $info->impl( $this->impl, $info );
         }
         
-        return $iface->instance;
+        return $this->iface_impl[$name];
     }
     
     /** @see \FutoIn\SimpleCCM */
@@ -91,6 +102,7 @@ class SimpleCCM
         {
             $info = &$this->iface_info[$name];
             unset( $this->iface_info[$name] );
+            unset( $this->iface_impl[$name] );
             
             if ( $info->aliases ) foreach ( $info->aliases as $v )
             {

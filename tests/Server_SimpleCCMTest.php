@@ -97,6 +97,18 @@ switch ( $f[0] )
                 echo file_get_contents('php://input');
                 die();
                 
+            case 'wrongdata':
+                header('Content-Type: text/plain; charset=utf8');
+                echo "WRONG DATA";
+                die();
+                
+            case 'wrongrsp':
+                response(
+                    $req,
+                    []
+                );
+                break;
+                
             case 'pingdata':
                 header('Content-Type: text/plain; charset=utf8');
                 echo $req->p->ping;

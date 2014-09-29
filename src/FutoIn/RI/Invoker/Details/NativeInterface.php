@@ -30,15 +30,21 @@ class NativeInterface
     
     public function call( \FutoIn\AsyncSteps $as, $name, $params, $upload_data=null, $download_stream=null )
     {
+        $ctx = new \StdClass;
+        $ctx->name = $name;
+        $ctx->info = $this->raw_info;
+        $ctx->upload_data = $upload_data;
+        $ctx->download_stream = $download_stream;
+    
         // Create message
         //---
-        $as->add(function($as) use ( $name, $params ) {
-            $this->ccmimpl->createMessage( $as, $this->raw_info, $name, $params );
+        $as->add(function($as) use ( $ctx, $params ) {
+            $this->ccmimpl->createMessage( $as, $ctx, $params );
         });
         
         // Perform request
         //---
-        $as->add(function($as, $req) use ( $upload_data, $download_stream ) {
+        $as->add(function($as, $req) use ( $ctx, $upload_data, $download_stream ) {
             $curl_opts = array(
                 CURLOPT_FORBID_REUSE => FALSE,
                 CURLOPT_FRESH_CONNECT => FALSE,
@@ -63,7 +69,6 @@ class NativeInterface
             
             $url = $this->raw_info->endpoint;
             $req = json_encode( $req, JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE );
-
             
             if ( $upload_data )
             {
@@ -127,7 +132,7 @@ class NativeInterface
                 $this->ccmimpl->multiCurlAdd( $as, $curl );
             });
 
-            $as->add(function($as, $curl, $info ) use ($download_stream) {
+            $as->add(function($as, $curl, $info ) use ($ctx, $download_stream) {
                 $http_code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
                 $content_type = curl_getinfo( $curl, CURLINFO_CONTENT_TYPE );
                 $error = curl_error( $curl );
@@ -158,7 +163,7 @@ class NativeInterface
                     
                     if ( $rsp )
                     {
-                        $this->ccmimpl->onMessageResponse( $as, $this->raw_info, $rsp );
+                        $this->ccmimpl->onMessageResponse( $as, $ctx, $rsp );
                     }
                     else
                     {
@@ -168,7 +173,7 @@ class NativeInterface
                 }
                 else
                 {
-                    $this->ccmimpl->onDataResponse( $as, $this->raw_info );
+                    $this->ccmimpl->onDataResponse( $as, $ctx );
                 }
             });
         });

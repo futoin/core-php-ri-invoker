@@ -2,5 +2,57 @@
     "iface" : "srv.test",
     "version" : "1.1",
     "funcs" : {
+        "test" : {
+            "params" : {
+                "ping" : {
+                    "type" : "string"
+                }
+            },
+            "result" : {
+                "pong" : {
+                    "type" : "string"
+                },
+                "ping" : {
+                    "type" : "string"
+                }
+            }
+        },
+        "data" : {
+            "params" : {
+                "ping" : {
+                    "type" : "string"
+                }
+            },
+            "rawupload" : true,
+            "rawresult" : true
+        },
+        "wrongdata" : {
+        },
+        "wrongrsp" : {
+            "rawresult" : true
+        },
+        "pingdata" : {
+            "params" : {
+                "ping" : {
+                    "type" : "string"
+                }
+            },
+            "rawupload" : true,
+            "rawresult" : true
+        },
+        "throw" : {
+            "params" : {
+                "errtype" : {
+                    "type" : "string"
+                }
+            },
+            "throws" : [
+                "MyErrorType"
+            ]
+        },
+        "notimpl" : {
+        },
+        "notversion" : {
+        }
     }
 }

@@ -32,6 +32,9 @@ class AdvancedCCM
         Note: It can be URL, if supported by file_get_contents(), but discouraged
     */
     const OPT_SPEC_DIRS = 'specdirs';
+    
+    /** Disable extra sanity checks for production mode performance */
+    const OPT_PROD_MODE = 'prodmode';
 
     /**
      * Construct
@@ -44,10 +47,10 @@ class AdvancedCCM
     }
     
     /** @see \FutoIn\AdvancedCCM */
-    public function initRegFromCache()
+    public function initRegFromCache( \FutoIn\AsyncSteps $as, $cache_l1_endpoint )
     {
-        // TODO:
-        return false;
+        /** TODO */
+        $as->success();
     }
     
     /** @see \FutoIn\AdvancedCCM */

@@ -97,23 +97,25 @@ class SimpleCCMImpl
         $as->success();
     }
     
-    public function createMessage( \FutoIn\AsyncSteps $as, $info, $name, &$params )
+    public function createMessage( \FutoIn\AsyncSteps $as, $ctx, &$params )
     {
+        $info = $ctx->info;
+    
         $req = array(
-            'f' => $info->iface . ':' . $info->version . ':' . $name,
+            'f' => $info->iface . ':' . $info->version . ':' . $ctx->name,
             'p' => $params,
             'forcersp' => true,
         );
         
-        $this->addSignature( $as, $info, $name, $req );
-    }
-    
-    public function addSignature( \FutoIn\AsyncSteps $as, $info, $name, &$req )
-    {
+        if ( $info->creds !== null )
+        {
+            $req['sec'] = $info->creds;
+        }
+        
         $as->success( $req );
     }
     
-    public function onMessageResponse( \FutoIn\AsyncSteps $as, $info, $rsp )
+    public function onMessageResponse( \FutoIn\AsyncSteps $as, $ctx, $rsp )
     {
         if ( isset( $rsp->e ) )
         {
@@ -125,7 +127,7 @@ class SimpleCCMImpl
         }
     }
     
-    public function onDataResponse( \FutoIn\AsyncSteps $as, $info )
+    public function onDataResponse( \FutoIn\AsyncSteps $as, $ctx )
     {
         $as->success( $as->_futoin_response );
     }

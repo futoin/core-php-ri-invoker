@@ -296,6 +296,12 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
         )->add(
             function($as) use ( $upload_data ) {
                 $iface = $this->ccm->iface( 'srv' );
+                
+                if ( $this->ccm instanceof \FutoIn\Invoker\AdvancedCCM )
+                {
+                    $upload_data = null;
+                }
+
                 $iface->call( $as, 'test', array( 'ping' => 'PINGPING' ), $upload_data );
             },
             function( $as, $err ){

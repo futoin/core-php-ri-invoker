@@ -38,7 +38,6 @@ class AdvancedCCMImpl
     public function onRegister( \FutoIn\AsyncSteps $as, $info )
     {
         $this->loadSpec( $as, $info );
-        $as->success();
     }
     
     private function loadSpec( $as, $info )
@@ -75,6 +74,7 @@ class AdvancedCCMImpl
             if ( isset( $f->params ) )
             {
                 $f->params = (array) $f->params;
+                $f->min_args = 0;
                 
                 foreach ( $f->params as $p )
                 {
@@ -82,6 +82,11 @@ class AdvancedCCMImpl
                     {
                         $as->error_info = "Missing type for params";
                         throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+                    }
+                    
+                    if ( !isset( $p->{"default"} ) )
+                    {
+                        $f->min_args += 1;
                     }
                 }
             }
@@ -309,28 +314,35 @@ class AdvancedCCMImpl
         }
         
         // check result variables
-        $resvars = $func_info->result;
-        
-        foreach ( $rsp->r as $k => $v )
+        if ( isset( $func_info->result ) )
         {
-            if ( !isset( $resvars[$k] ) )
+            $resvars = $func_info->result;
+            
+            foreach ( $rsp->r as $k => $v )
             {
-                $as->error_info = "Unknown result variable $k";
-                throw new \FutoIn\Error( \FutoIn\Error::InternalError );
+                if ( !isset( $resvars[$k] ) )
+                {
+                    $as->error_info = "Unknown result variable $k";
+                    throw new \FutoIn\Error( \FutoIn\Error::InternalError );
+                }
+                
+                $this->checkType( $as, $resvars[$k]->type, $k, $v );
+                unset( $resvars[$k] );
             }
             
-            $this->checkType( $as, $resvars[$k]->type, $k, $v );
-            unset( $resvars[$k] );
-        }
+            if ( count( $resvars ) )
+            {
+                $as->error_info = "Missing result variables";
+                throw new \FutoIn\Error( \FutoIn\Error::InternalError );
+            }
         
-        if ( count( $resvars ) )
+            // Success
+            $as->success( $rsp->r );
+        }
+        else
         {
-            $as->error_info = "Missing result variables";
-            throw new \FutoIn\Error( \FutoIn\Error::InternalError );
+            $as->success();
         }
-        
-        // Success
-        $as->success( $rsp->r );
     }
     
     public function onDataResponse( \FutoIn\AsyncSteps $as, $ctx )

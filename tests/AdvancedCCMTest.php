@@ -201,4 +201,122 @@ class AdvancedCCMTest extends SimpleCCMTest
         $this->as->run();
         $this->assertTrue( $this->as->executed );
     }
+    
+    public function testAdvancedCall()
+    {
+        $this->as->add(function( $as ){
+            $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+        });
+        
+        $this->as->executed = 0;
+        
+        $this->as->add(
+            function($as){
+                $iface = $this->ccm->iface( 'srv' );
+                $iface->advancedcalla( $as );
+            },
+            function( $as, $err ){
+                $this->assertEquals( 'InvokerError', $err );
+                $this->assertTrue( strpos($as->error_info, "Unknown interface function" ) === 0 );
+                $as->executed += 1;
+                $as->success();
+            }
+        )->add(
+            function($as){
+                $iface = $this->ccm->iface( 'srv' );
+                $iface->advancedcall( $as );
+            },
+            function( $as, $err ){
+                $this->assertEquals( 'InvokerError', $err );
+                $this->assertTrue( strpos($as->error_info, "Missing parameters" ) === 0 );
+                $as->executed += 1;
+                $as->success();
+            }
+        )->add(
+            function($as){
+                $iface = $this->ccm->iface( 'srv' );
+                $iface->advancedcall( $as, 'a', 'b' );
+            },
+            function( $as, $err ){
+                $this->assertEquals( 'InvokerError', $err );
+                $this->assertTrue( strpos($as->error_info, "Type mismatch" ) === 0 );
+                $as->executed += 1;
+                $as->success();
+            }
+        )->add(
+            function($as){
+                $iface = $this->ccm->iface( 'srv' );
+                $iface->advancedcall( $as, 1 );
+            },
+            function( $as, $err ){
+                $this->assertEquals( 'InvokerError', $err );
+                $this->assertTrue( strpos($as->error_info, "Missing parameters" ) === 0 );
+                $as->executed += 1;
+                $as->success();
+            }
+        )->add(
+            function($as){
+                $iface = $this->ccm->iface( 'srv' );
+                $iface->advancedcall( $as, 1, 2, 3, 4 );
+            },
+            function( $as, $err ){
+                $this->assertEquals( 'InvokerError', $err );
+                $this->assertTrue( strpos($as->error_info, "Unknown parameter" ) === 0 );
+                $as->executed += 1;
+                $as->success();
+            }
+        )->add(
+            function($as){
+                $iface = $this->ccm->iface( 'srv' );
+                $iface->advancedcall( $as, 1, 2, 3 );
+            },
+            function( $as, $err ){
+                $this->assertFalse( true );
+            }
+        )->add(
+            function($as){
+                $iface = $this->ccm->iface( 'srv' );
+                $iface->advancedcall( $as, 1, 2 );
+            },
+            function( $as, $err ){
+                $this->assertFalse( true );
+            }
+        )->add(
+            function($as){
+                $iface = $this->ccm->iface( 'srv' );
+                $as->executed += 1;
+                $as->success();
+            }
+        );
+        
+        $this->as->run();
+        $this->assertEquals( 6, $this->as->executed );
+
+    }
+    
+    /**
+     * @medium
+     */
+    public function testAdvancedCallComplex()
+    {
+        # Make sure re-used cURL works OK
+        for ( $i = 0; $i < 5; ++$i )
+        {
+            $this->testRegisterNoSpec();
+            $this->testCallWrongParam();
+            $this->ccm->unRegister( 'srv' );
+            $this->testCallWrongParamType();
+            $this->ccm->unRegister( 'srv' );
+            $this->testCallNotExpectedError();
+            $this->ccm->unRegister( 'srv' );
+            $this->testCallUploadNotExpectedError();
+            $this->ccm->unRegister( 'srv' );
+            $this->testCallWrongRawData();
+            $this->ccm->unRegister( 'srv' );
+            $this->testCallWrongResponse();
+            $this->ccm->unRegister( 'srv' );
+            $this->testAdvancedCall();
+            $this->ccm->unRegister( 'srv' );
+        }
+    }
 }

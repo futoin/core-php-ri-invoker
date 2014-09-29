@@ -60,7 +60,7 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
         $this->as->add(
             function($as){
                 $this->ccm->register( $as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
-                $this->ccm->register( $as, 'testB', 'test.b:2.3', 'http://localhost:12345/ftn/', array( 'user'=>'userX', 'password'=>'passX' ) );
+                $this->ccm->register( $as, 'testB', 'test.b:2.3', 'http://localhost:12345/ftn/', 'userX:passX' );
             },
             function($as,$err){
                 $this->assertFalse( true );

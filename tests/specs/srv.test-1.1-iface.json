@@ -53,6 +53,20 @@
         "notimpl" : {
         },
         "notversion" : {
+        },
+        "advancedcall" : {
+            "params" : {
+                "a" : {
+                    "type" : "integer"
+                },
+                "b" : {
+                    "type" : "integer"
+                },
+                "c" : {
+                    "type" : "integer",
+                    "default" : 0
+                }
+            }
         }
     }
 }

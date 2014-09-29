@@ -50,11 +50,10 @@ class AdvancedCCM
     public function initRegFromCache( \FutoIn\AsyncSteps $as, $cache_l1_endpoint )
     {
         /** TODO */
-        $as->success();
     }
     
     /** @see \FutoIn\AdvancedCCM */
-    public function cacheReg()
+    public function cacheReg( \FutoIn\AsyncSteps $as )
     {
         // TODO:
     }

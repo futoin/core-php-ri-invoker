@@ -122,6 +122,21 @@ switch ( $f[0] )
                 
             case 'notversion':
                 response_throw( $req, 'NotSupportedVersion' );
+                
+            case 'advancedcall':
+                if ( ( $req->p->a !== 1 ) ||
+                     ( $req->p->b !== 2 ) ||
+                     ( isset( $req->p->c ) && ( $req->p->c !== 3 ) )
+                   )
+                {
+                    response_throw( $req, 'InvalidRequest' );
+                }
+                
+                response(
+                    $req,
+                    []
+                );
+                break;
         }
 
         break;

@@ -198,4 +198,57 @@ class NativeInterface
     {
         throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
     }
+    
+    public function __call( $name, $args )
+    {
+        if ( !$args )
+        {
+            throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+        }
+        
+        $as = array_shift( $args );
+        $funcs = $this->raw_info->funcs;
+    
+        if ( !is_array( $funcs ) )
+        {
+            $as->error_info = "No function definition / Not AdvancedCCM";
+            throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+        }
+    
+        if ( !isset( $funcs[$name] ) )
+        {
+            $as->error_info = "Unknown interface function";
+            throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+        }
+        
+        $func_info = $funcs[$name];
+        
+        // Check for too many args
+        if ( empty( $func_info->params ) && count( $args ) )
+        {
+            $as->error_info = "Unknown parameters";
+            throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+        }
+        
+        $keys = array_keys( $func_info->params );
+        
+        if ( count( $args ) > count( $keys ) )
+        {
+            $as->error_info = "Unknown parameters";
+            throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+        }
+        elseif ( count( $args ) < $func_info->min_args )
+        {
+            $as->error_info = "Missing parameters";
+            throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+        }
+        elseif ( count( $args ) < count( $keys ) )
+        {
+            array_splice( $keys, count( $args ) );
+        }
+        
+        // Perform final call
+        $params = array_combine( $keys, $args );
+        $this->call( $as, $name, $params );
+    }
 }

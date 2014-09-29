@@ -39,6 +39,7 @@ class SimpleCCM
     {
         if ( ! preg_match('/^([a-z][a-z0-9]*)(\\.[a-z][a-z0-9]*)+:[0-9]+\\.[0-9]+$/i', $ifacever ) )
         {
+            $as->error_info = "Invalid ifacever";
             throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
         }
     
@@ -48,6 +49,7 @@ class SimpleCCM
         // Unregister First
         if ( array_key_exists( $name, $this->iface_info ) )
         {
+            $as->error_info = "Already registered";
             throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
         }
         
@@ -73,9 +75,13 @@ class SimpleCCM
             $info->impl = "\FutoIn\RI\Invoker\Details\NativeInterface";
         }
         
+        $this->impl->onRegister( $as, $info );
+        
         $this->iface_info[$name] = $info;
         
-        $this->impl->onRegister( $as, $info );
+        $as->add(function($as){
+            $as->success();
+        });
     }
     
     /** @see \FutoIn\SimpleCCM */

@@ -94,7 +94,6 @@ class SimpleCCMImpl
     
     public function onRegister( \FutoIn\AsyncSteps $as, $info )
     {
-        $as->success();
     }
     
     public function createMessage( \FutoIn\AsyncSteps $as, $ctx, &$params )

@@ -26,6 +26,7 @@ class AdvancedCCMTest extends SimpleCCMTest
     {
         $this->as = null;
         $this->ccm = null;
+        gc_collect_cycles();
     }
     
     public function testRegisterNoSpec()

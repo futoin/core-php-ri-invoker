@@ -49,6 +49,7 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {
         $this->as = null;
         $this->ccm = null;
+        gc_collect_cycles();
     }
     
     /**

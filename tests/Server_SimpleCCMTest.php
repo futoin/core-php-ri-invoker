@@ -45,7 +45,10 @@ if ( !preg_match( ',^/ftn(/)?(\?.*)?$,', $_SERVER['REQUEST_URI'] ) )
 
 // Parse Request
 //---
-parse_str( $_SERVER['QUERY_STRING'], $getprm );
+if ( isset( $_SERVER['QUERY_STRING'] ) )
+{
+    parse_str( $_SERVER['QUERY_STRING'], $getprm );
+}
 
 if ( isset( $getprm['ftnreq'] ) )
 {

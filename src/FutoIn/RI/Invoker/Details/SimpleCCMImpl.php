@@ -19,10 +19,15 @@ class SimpleCCMImpl
         
         // TODO: cURL "eventization" with libevent/libev/libuv and integration with AsyncSteps loop
         $this->curl_mh = curl_multi_init();
-        curl_multi_setopt( $this->curl_mh, CURLMOPT_PIPELINING, 1 );
-        curl_multi_setopt( $this->curl_mh, CURLMOPT_MAXCONNECTS,
-            isset( $curl_opts[CURLOPT_MAXCONNECTS] )
-            ? $curl_opts[CURLOPT_MAXCONNECTS] : 8 );
+        
+        # Missing on HHVM
+        if ( function_exists( 'curl_multi_setopt' ) )
+        {
+            curl_multi_setopt( $this->curl_mh, CURLMOPT_PIPELINING, 1 );
+            curl_multi_setopt( $this->curl_mh, CURLMOPT_MAXCONNECTS,
+                isset( $curl_opts[CURLOPT_MAXCONNECTS] )
+                ? $curl_opts[CURLOPT_MAXCONNECTS] : 8 );
+        }
     }
     
     public function __destruct()
@@ -76,7 +81,7 @@ class SimpleCCMImpl
             \FutoIn\RI\AsyncTool::cancelCall( $this->curl_event );
             $this->curl_event = null;
         }
-        
+
         if ( $this->curl_cb )
         {
             $this->curl_event = \FutoIn\RI\AsyncTool::callLater( [ $this, "multiCurlSelect" ] );
@@ -85,7 +90,7 @@ class SimpleCCMImpl
     
     public function multiCurlSelect()
     {
-        // Yes, very very dirty. cURL integration with even loop is required
+        // Yes, very very dirty. cURL integration with event loop is required
         $timeout = 0.01;
         curl_multi_select( $this->curl_mh, $timeout );
         $this->multiCurlPoll();

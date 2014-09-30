@@ -317,6 +317,8 @@ class AdvancedCCMTest extends SimpleCCMTest
             $this->ccm->unRegister( 'srv' );
             $this->testAdvancedCall();
             $this->ccm->unRegister( 'srv' );
+            
+            gc_collect_cycles();
         }
     }
 }

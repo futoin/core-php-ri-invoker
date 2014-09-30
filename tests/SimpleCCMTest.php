@@ -570,6 +570,8 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
             $this->ccm->unRegister( 'srv' );
             $this->testCallParallel();
             $this->ccm->unRegister( 'srv' );
+            
+            gc_collect_cycles();
         }
     }
 }

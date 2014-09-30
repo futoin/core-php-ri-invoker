@@ -47,14 +47,16 @@ class AdvancedCCM
     }
     
     /** @see \FutoIn\AdvancedCCM */
-    public function initRegFromCache( \FutoIn\AsyncSteps $as, $cache_l1_endpoint )
+    public function initFromCache( \FutoIn\AsyncSteps $as, $cache_l1_endpoint )
     {
         /** TODO */
+        $as->error( \FutoIn\Error::NotImplemented );
     }
     
     /** @see \FutoIn\AdvancedCCM */
-    public function cacheReg( \FutoIn\AsyncSteps $as )
+    public function cacheInit( \FutoIn\AsyncSteps $as )
     {
         // TODO:
+        $as->error( \FutoIn\Error::NotImplemented );
     }
 }

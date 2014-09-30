@@ -21,7 +21,7 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
         AsyncToolTest::init();
         
         self::$phpserver = proc_open(
-            "php -d display_errors=1 -S localhost:12345 " . __DIR__.'/Server_SimpleCCMTest.php',
+            "php -d always_populate_raw_post_data=-1 -S localhost:12345 " . __DIR__.'/Server_SimpleCCMTest.php',
             array(
                 0 => array("pipe", "r"),
                 1 => array("pipe", "w"),

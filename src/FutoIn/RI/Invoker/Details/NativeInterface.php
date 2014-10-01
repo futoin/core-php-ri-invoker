@@ -142,8 +142,8 @@ class NativeInterface
 
                 if ( $http_code !== 200 )
                 {
-                    $as->error_info = "HTTP:$http_code RSP:$rsp CURL:$error";
-                    $as->error( \FutoIn\Error::CommError );
+                    $as->error( \FutoIn\Error::CommError, "HTTP:$http_code CURL:$error" );
+var_dump( $as->_futoin_response ); // Temporary to debug Travis CI error
                 }
                 elseif ( $download_stream )
                 {
@@ -167,8 +167,7 @@ class NativeInterface
                     }
                     else
                     {
-                        $as->error_info = "JSON:".json_last_error_msg();
-                        $as->error( \FutoIn\Error::CommError );
+                        $as->error( \FutoIn\Error::CommError, "JSON:".json_last_error_msg() );
                     }
                 }
                 else
@@ -208,17 +207,20 @@ class NativeInterface
         
         $as = array_shift( $args );
         $funcs = $this->raw_info->funcs;
+        
+        if ( !( $as instanceof \FutoIn\AsyncSteps ) )
+        {
+            throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+        }
     
         if ( !is_array( $funcs ) )
         {
-            $as->error_info = "No function definition / Not AdvancedCCM";
-            throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+            $as->error( \FutoIn\Error::InvokerError, "No function definition / Not AdvancedCCM" );
         }
     
         if ( !isset( $funcs[$name] ) )
         {
-            $as->error_info = "Unknown interface function";
-            throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+            $as->error( \FutoIn\Error::InvokerError, "Unknown interface function" );
         }
         
         $func_info = $funcs[$name];
@@ -226,21 +228,18 @@ class NativeInterface
         // Check for too many args
         if ( empty( $func_info->params ) && count( $args ) )
         {
-            $as->error_info = "Unknown parameters";
-            throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+            $as->error( \FutoIn\Error::InvokerError, "Unknown parameters" );
         }
         
         $keys = array_keys( $func_info->params );
         
         if ( count( $args ) > count( $keys ) )
         {
-            $as->error_info = "Unknown parameters";
-            throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+            $as->error( \FutoIn\Error::InvokerError, "Unknown parameters" );
         }
         elseif ( count( $args ) < $func_info->min_args )
         {
-            $as->error_info = "Missing parameters";
-            throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+            $as->error( \FutoIn\Error::InvokerError, "Missing parameters" );
         }
         elseif ( count( $args ) < count( $keys ) )
         {

@@ -40,7 +40,7 @@ class AdvancedCCMImpl
         SpecTools::loadSpec( $as, $info, $this->specdirs );
     }
     
-    public function checkParams( \FutoIn\AsyncSteps $as, $ctx, &$params )
+    public function checkParams( \FutoIn\AsyncSteps $as, $ctx, $params )
     {
         $info = $ctx->info;
         $name = $ctx->name;
@@ -58,7 +58,7 @@ class AdvancedCCMImpl
             $as->error( \FutoIn\Error::InvokerError, "Raw upload is not allowed" );
         }
         
-        if ( empty( $f->params ) && count( $params ) )
+        if ( empty( $f->params ) && count( get_object_vars( $params ) ) )
         {
             $as->error( \FutoIn\Error::InvokerError, "No params are defined" );
         }
@@ -77,7 +77,7 @@ class AdvancedCCMImpl
         // Check missing params
         foreach ( $f->params as $k => $v )
         {
-             if ( !isset( $params[$k]) &&
+             if ( !isset( $params->$k) &&
                   !isset( $v->{"default"} ) )
              {
                 $as->error( \FutoIn\Error::InvokerError, "Missing parameter $k" );
@@ -86,7 +86,7 @@ class AdvancedCCMImpl
     }
         
     
-    public function createMessage( \FutoIn\AsyncSteps $as, $ctx, &$params )
+    public function createMessage( \FutoIn\AsyncSteps $as, $ctx, $params )
     {
         if ( $this->development_checks )
         {

@@ -166,5 +166,4 @@ class SpecTools
             $as->error( \FutoIn\Error::InvokerError, "Type mismatch ($rtype) for $var" );
         }
     }
-
 }

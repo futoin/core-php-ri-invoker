@@ -35,6 +35,8 @@ class NativeInterface
         $ctx->info = $this->raw_info;
         $ctx->upload_data = $upload_data;
         $ctx->download_stream = $download_stream;
+        
+        $params = (object)$params;
     
         // Create message
         //---

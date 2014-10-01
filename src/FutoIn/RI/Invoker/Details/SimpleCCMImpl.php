@@ -101,7 +101,7 @@ class SimpleCCMImpl
     {
     }
     
-    public function createMessage( \FutoIn\AsyncSteps $as, $ctx, &$params )
+    public function createMessage( \FutoIn\AsyncSteps $as, $ctx, $params )
     {
         $info = $ctx->info;
     

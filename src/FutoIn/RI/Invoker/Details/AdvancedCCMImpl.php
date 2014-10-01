@@ -129,8 +129,7 @@ class AdvancedCCMImpl
         // Check raw result
         if ( $func_info->rawresult )
         {
-            $as->error_info = "Raw result is expected";
-            throw new \FutoIn\Error( \FutoIn\Error::InternalError );
+            $as->error( \FutoIn\Error::InternalError, "Raw result is expected" );
         }
     
         // Check signature
@@ -160,15 +159,14 @@ class AdvancedCCMImpl
         {
             $resvars = $func_info->result;
             
+            // NOTE: by forward compatibility and inheritance requirements, unknown result variables are allowed
             foreach ( $rsp->r as $k => $v )
             {
-                if ( !isset( $resvars[$k] ) )
+                if ( isset( $resvars[$k] ) )
                 {
-                    $as->error( \FutoIn\Error::InternalError, "Unknown result variable $k" );
+                    SpecTools::checkFutoInType( $as, $resvars[$k]->type, $k, $v );
+                    unset( $resvars[$k] );
                 }
-                
-                SpecTools::checkFutoInType( $as, $resvars[$k]->type, $k, $v );
-                unset( $resvars[$k] );
             }
             
             if ( count( $resvars ) )

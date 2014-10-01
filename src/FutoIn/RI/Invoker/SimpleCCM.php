@@ -63,6 +63,7 @@ class SimpleCCM
         $info->mnrver = $mjrmnr[1];
         $info->endpoint = $endpoint;
         $info->creds = $credentials;
+        $info->secure_channel = ( strpos( $endpoint, 'https' ) === null );
         
         $url = parse_url( $endpoint );
         

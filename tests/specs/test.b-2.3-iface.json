@@ -1,5 +1,10 @@
 {
     "iface" : "test.b",
     "version" : "2.3",
-    "funcs" : {}
+    "funcs" : {
+        "somefunc" : {}
+    },
+    "requires" : [
+        "SecureChannel"
+    ]
 }

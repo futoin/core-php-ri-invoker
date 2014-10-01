@@ -45,6 +45,12 @@ class AdvancedCCMImpl
         $info = $ctx->info;
         $name = $ctx->name;
         
+        if ( isset( $info->constraints['SecureChannel'] ) &&
+             !$info->secure_channel )
+        {
+            $as->error( \FutoIn\Error::SecurityError, "Requires secure channel" );
+        }
+        
         if ( !isset( $info->funcs[$name] ) )
         {
             $as->error( \FutoIn\Error::InvokerError, "Unknown interface function" );

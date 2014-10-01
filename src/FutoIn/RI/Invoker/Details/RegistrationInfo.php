@@ -22,6 +22,7 @@ class RegistrationInfo
     public $def = null;
     public $impl = null;
     public $aliases = null;
+    public $secure_channel = false;
     
     public $inherits = null;
     public $funcs = null;

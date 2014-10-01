@@ -295,6 +295,32 @@ class AdvancedCCMTest extends SimpleCCMTest
 
     }
     
+    public function testSecureChannel()
+    {
+        $this->as->add(function( $as ){
+            $this->ccm->register( $as, 'srv', 'test.b:2.3', 'http://localhost:12345/ftn' );
+        });
+        
+        $this->as->add(
+            function($as){
+                $iface = $this->ccm->iface( 'srv' );
+                $iface->call( $as, 'somefunc', array() );
+            },
+            function( $as, $err ){
+                $this->assertEquals( 'SecurityError', $err );
+                $this->assertTrue( strpos($as->error_info, "Requires secure channel" ) === 0 );
+                $as->executed = true;
+            }
+        )->add(
+            function( $as, $rsp ){
+                $as->executed = false;
+            }
+        );
+        
+        $this->as->run();
+        $this->assertTrue( $this->as->executed );
+    }
+    
     /**
      * @medium
      */
@@ -317,6 +343,8 @@ class AdvancedCCMTest extends SimpleCCMTest
             $this->testCallWrongResponse();
             $this->ccm->unRegister( 'srv' );
             $this->testAdvancedCall();
+            $this->ccm->unRegister( 'srv' );
+            $this->testSecureChannel();
             $this->ccm->unRegister( 'srv' );
             
             gc_collect_cycles();

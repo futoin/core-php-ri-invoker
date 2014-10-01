@@ -122,6 +122,8 @@ class SpecTools
             $info->constraints = [];
         }
         
+        $info->inherits = [];
+        
         if ( !isset( $raw_spec->inherit ) )
         {
             return;
@@ -135,6 +137,9 @@ class SpecTools
         $sup_info->version = $ifacever[1];
         $this->loadSpec( $as, $sup_info, $specdirs );
         
+        $info->inherits[] = $raw_spec->inherit;
+        
+        $info->inherits += $sup_info->inherits;
         $info->constraints += $sup_info->constraints;
         $info->funcs += $sup_info->funcs;
     }

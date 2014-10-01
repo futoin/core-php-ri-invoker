@@ -53,8 +53,18 @@ class SimpleCCM
             throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
         }
         
-        // Silently map WebSockets to HTTP/HTTPS as per FTN7 spec
-        $endpoint = preg_replace( '/^ws(s?):\/\//', 'http${1}://', $endpoint );
+        $endpoint = preg_replace( '/^secure\\+/', '', $endpoint, 1, $repcnt );
+        $secure_channel = ( $repcnt > 0 );
+        
+        // Silently map WebSockets to HTTP/HTTPS as per FTN7 spec, if not supported
+        $endpoint = preg_replace( '/^ws(s?):\\/\\//', 'http${1}://', $endpoint );
+        
+        if ( !$secure_channel &&
+             preg_match( '/^https:/', $endpoint ) )
+        {
+            $secure_channel = true;
+        }
+        
         
         $info = new Details\RegistrationInfo;
         $info->iface = $ifacever[0];
@@ -63,7 +73,7 @@ class SimpleCCM
         $info->mnrver = $mjrmnr[1];
         $info->endpoint = $endpoint;
         $info->creds = $credentials;
-        $info->secure_channel = ( strpos( $endpoint, 'https' ) === null );
+        $info->secure_channel = $secure_channel;
         
         $url = parse_url( $endpoint );
         

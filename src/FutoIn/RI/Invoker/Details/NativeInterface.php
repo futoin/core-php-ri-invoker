@@ -143,7 +143,6 @@ class NativeInterface
                 if ( $http_code !== 200 )
                 {
                     $as->error( \FutoIn\Error::CommError, "HTTP:$http_code CURL:$error" );
-var_dump( $as->_futoin_response ); // Temporary to debug Travis CI error
                 }
                 elseif ( $download_stream )
                 {
@@ -153,8 +152,7 @@ var_dump( $as->_futoin_response ); // Temporary to debug Travis CI error
                     }
                     else
                     {
-                        $as->error_info = "CURL:$error";
-                        $as->error( \FutoIn\Error::CommError );
+                        $as->error( \FutoIn\Error::CommError, "CURL:$error" );
                     }
                 }
                 elseif ( $content_type === 'application/futoin+json' )

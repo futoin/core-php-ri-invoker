@@ -20,8 +20,13 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {
         AsyncToolTest::init();
         
+        // temporary workaround
+        $phpcmd = defined('HHVM_VERSION')
+            ? '/usr/bin/php5'
+            : 'php';
+        
         self::$phpserver = proc_open(
-            "php -d always_populate_raw_post_data=-1 -S localhost:12345 " . __DIR__.'/Server_SimpleCCMTest.php',
+            "$phpcmd -d always_populate_raw_post_data=-1 -S localhost:12345 " . __DIR__.'/Server_SimpleCCMTest.php',
             array(
                 0 => array("file", '/dev/null', "r"),
                 1 => array("file", '/dev/null', "w"),

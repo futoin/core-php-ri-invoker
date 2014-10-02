@@ -58,6 +58,15 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     }
     
     /**
+     * @expectedException \FutoIn\Error
+     */
+    public function testForbidCloneCMM()
+    {
+        clone $this->ccm;
+        $this->assertTrue( true );
+    }
+    
+    /**
      * @medium
      * Just give a little more time on initial load
      */

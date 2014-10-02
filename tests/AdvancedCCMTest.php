@@ -37,7 +37,7 @@ class AdvancedCCMTest extends SimpleCCMTest
             },
             function( $as, $err ){
                 $as->executed = true;
-                $this->assertEquals( "InvokerError", $err );
+                $this->assertEquals( "InternalError", $err );
                 $this->assertTrue( strpos($as->error_info, "Failed to load valid spec for" ) === 0 );
             }
         )->add(function($as){
@@ -85,7 +85,7 @@ class AdvancedCCMTest extends SimpleCCMTest
                 $iface->call( $as, 'throw', array( 'errtype' => true ) );
             },
             function( $as, $err ){
-                $this->assertEquals( 'InvokerError', $err );
+                $this->assertEquals( 'InternalError', $err );
                 $this->assertTrue( strpos($as->error_info, "Type mismatch" ) === 0 );
                 $as->executed = true;
             }
@@ -239,7 +239,7 @@ class AdvancedCCMTest extends SimpleCCMTest
                 $iface->advancedcall( $as, 'a', 'b' );
             },
             function( $as, $err ){
-                $this->assertEquals( 'InvokerError', $err );
+                $this->assertEquals( 'InternalError', $err );
                 $this->assertTrue( strpos($as->error_info, "Type mismatch" ) === 0 );
                 $as->executed += 1;
                 $as->success();

@@ -50,7 +50,7 @@ class SpecTools
              !isset( $raw_spec->funcs ) ||
              !is_object( $raw_spec->funcs ) )
         {
-            $as->error( \FutoIn\Error::InvokerError, "Failed to load valid spec for ".$info->iface.":".$info->version );
+            $as->error( \FutoIn\Error::InternalError, "Failed to load valid spec for ".$info->iface.":".$info->version );
         }
         
         $info->funcs = (array)$raw_spec->funcs;
@@ -66,7 +66,7 @@ class SpecTools
                 {
                     if ( !isset( $p->type ) )
                     {
-                        $as-error( \FutoIn\Error::InvokerError, "Missing type for params" );
+                        $as-error( \FutoIn\Error::InternalError, "Missing type for params" );
                     }
                     
                     if ( !isset( $p->{"default"} ) )
@@ -88,7 +88,7 @@ class SpecTools
                 {
                     if ( !isset( $p->type ) )
                     {
-                        $as->error( \FutoIn\Error::InvokerError, "Missing type for result" );
+                        $as->error( \FutoIn\Error::InternalError, "Missing type for result" );
                     }
                 }
             }
@@ -135,13 +135,54 @@ class SpecTools
         
         $sup_info->iface = $ifacever[0];
         $sup_info->version = $ifacever[1];
-        $this->loadSpec( $as, $sup_info, $specdirs );
+        self::loadSpec( $as, $sup_info, $specdirs );
+        
+        foreach ( $sup_info->funcs as $fn => $fdef )
+        {
+            if ( !isset( $info->funcs[$fn] ) )
+            {
+                $info->funcs[$fn] = $sup_info->funcs[$fn];
+                continue;
+            }
+            
+            $sup_params = $sup_info->funcs[$fn]->params;
+            $params = $info->funcs[$fn]->params;
+            
+            // Verify parameters are correctly duplicated
+            foreach ( $sup_params as $pn => $pv )
+            {
+                if ( !isset( $params[$pn] ) )
+                {
+                    $as->error( \FutoIn\Error::InternalError, "Missing func param $fn/$pn" );
+                }
+                
+                if ( $pv->type !== $params[$pn]->type )
+                {
+                    $as->error( \FutoIn\Error::InternalError, "Param type mismatch $fn/$pn" );
+                }
+                
+                unset( $params[$pn] );
+            }
+            
+            // Verify that all added params have default value
+            foreach( $params as $pn => $pv )
+            {
+                // NULL is allowed as well
+                if ( !property_exists( $params[$pn], 'default' ) )
+                {
+                    $as->error( \FutoIn\Error::InternalError, "Missing default for $fn/$pn" );
+                }
+            }
+        }
         
         $info->inherits[] = $raw_spec->inherit;
         
         $info->inherits += $sup_info->inherits;
-        $info->constraints += $sup_info->constraints;
-        $info->funcs += $sup_info->funcs;
+        
+        if ( count( array_diff( $sup_info->constraints, $info->constraints ) ) )
+        {
+            $as->error( \FutoIn\Error::InternalError, "Missing constraints from inherited" );
+        }
     }
     
     public static function checkFutoInType( \FutoIn\AsyncSteps $as, $type, $var, $val )
@@ -168,7 +209,7 @@ class SpecTools
         
         if ( gettype($val) !== $rtype )
         {
-            $as->error( \FutoIn\Error::InvokerError, "Type mismatch ($rtype) for $var" );
+            $as->error( \FutoIn\Error::InternalError, "Type mismatch ($rtype) for $var" );
         }
     }
 }

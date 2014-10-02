@@ -209,7 +209,7 @@ class SpecTools
         
         if ( gettype($val) !== $rtype )
         {
-            $as->error( \FutoIn\Error::InternalError, "Type mismatch ($rtype) for $var" );
+            $as->error( \FutoIn\Error::InvalidRequest, "Type mismatch for parameter" );
         }
     }
 }

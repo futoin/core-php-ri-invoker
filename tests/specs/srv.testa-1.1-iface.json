@@ -4,5 +4,9 @@
     "funcs" : {
         "notimpl" : {
         }
-    }
+    },
+    "requires" : [
+        "AllowAnonymous"
+    ]
+
 }

@@ -51,6 +51,12 @@ class AdvancedCCMImpl
             $as->error( \FutoIn\Error::SecurityError, "Requires secure channel" );
         }
         
+        if ( !isset( $info->constraints['AllowAnonymous'] ) &&
+             !$info->creds )
+        {
+            $as->error( \FutoIn\Error::SecurityError, "Requires authenticated user" );
+        }
+        
         if ( !isset( $info->funcs[$name] ) )
         {
             $as->error( \FutoIn\Error::InvokerError, "Unknown interface function" );

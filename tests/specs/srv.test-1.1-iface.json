@@ -68,5 +68,8 @@
                 }
             }
         }
-    }
+    },
+    "requires" : [
+        "AllowAnonymous"
+    ]
 }

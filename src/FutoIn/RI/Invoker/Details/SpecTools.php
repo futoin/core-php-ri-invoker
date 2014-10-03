@@ -141,11 +141,11 @@ class SpecTools
         {
             if ( !isset( $info->funcs[$fn] ) )
             {
-                $info->funcs[$fn] = $sup_info->funcs[$fn];
+                $info->funcs[$fn] = $fdef;
                 continue;
             }
             
-            $sup_params = $sup_info->funcs[$fn]->params;
+            $sup_params = $fdef->params;
             $params = $info->funcs[$fn]->params;
             
             // Verify parameters are correctly duplicated
@@ -153,12 +153,12 @@ class SpecTools
             {
                 if ( !isset( $params[$pn] ) )
                 {
-                    $as->error( \FutoIn\Error::InternalError, "Missing func param $fn/$pn" );
+                    $as->error( \FutoIn\Error::InternalError, "Missing func param '$fn/$pn'" );
                 }
                 
                 if ( $pv->type !== $params[$pn]->type )
                 {
-                    $as->error( \FutoIn\Error::InternalError, "Param type mismatch $fn/$pn" );
+                    $as->error( \FutoIn\Error::InternalError, "Param type mismatch '$fn/$pn'" );
                 }
                 
                 unset( $params[$pn] );
@@ -170,8 +170,13 @@ class SpecTools
                 // NULL is allowed as well
                 if ( !property_exists( $params[$pn], 'default' ) )
                 {
-                    $as->error( \FutoIn\Error::InternalError, "Missing default for $fn/$pn" );
+                    $as->error( \FutoIn\Error::InternalError, "Missing default for '$fn/$pn'" );
                 }
+            }
+            
+            if ( $fdef->rawresult !== $info->funcs[$fn]->rawresult )
+            {
+                $as->error( \FutoIn\Error::InternalError, "r'awresult flag' mismatch for '$fn'" );
             }
         }
         

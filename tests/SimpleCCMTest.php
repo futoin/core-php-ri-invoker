@@ -284,6 +284,8 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
                 $iface->call( $as, 'data', array( 'ping' => 'PINGPING' ), $upload_data );
             },
             function( $as, $err ){
+                var_dump( $err );
+                var_dump( $as->error_info );
                 $as->executed1 = false;
             }
         )->add(
@@ -299,6 +301,8 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
                 $iface->call( $as, 'pingdata', array( 'ping' => 'PINGPING' ), $upload_data );
             },
             function( $as, $err ){
+                var_dump( $err );
+                var_dump( $as->error_info );
                 $as->executed2 = false;
             }
         )->add(
@@ -320,6 +324,8 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
                 $iface->call( $as, 'test', array( 'ping' => 'PINGPING' ), $upload_data );
             },
             function( $as, $err ){
+                var_dump( $err );
+                var_dump( $as->error_info );
                 $as->executed3 = false;
             }
         )->add(

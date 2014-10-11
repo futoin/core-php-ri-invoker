@@ -111,12 +111,13 @@ class SimpleCCMImpl
             'forcersp' => true,
         );
         
-        if ( $info->creds !== null )
+        if ( ( $info->creds !== null ) &&
+             ( $info->creds !== 'master' ) )
         {
             $req['sec'] = $info->creds;
         }
         
-        $as->success( $req );
+        $as->success( (object)$req );
     }
     
     public function onMessageResponse( \FutoIn\AsyncSteps $as, $ctx, $rsp )

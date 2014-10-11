@@ -38,21 +38,23 @@ if ( $_SERVER['REQUEST_METHOD'] !== 'POST' )
     fail( 'Not POST' );
 }
 
-if ( !preg_match( ',^/ftn(/)?(\?.*)?$,', $_SERVER['REQUEST_URI'] ) )
-{
-    fail( 'Invalid URI: '.$_SERVER['REQUEST_URI'] );
-}
 
 // Parse Request
 //---
-if ( isset( $_SERVER['QUERY_STRING'] ) )
+$url = parse_url( $_SERVER['REQUEST_URI'] );
+
+if ( ( $url['path'] !== '/ftn' ) &&
+     ( $url['path'] !== '/ftn/' ) )
 {
     parse_str( $_SERVER['QUERY_STRING'], $getprm );
-}
-
-if ( isset( $getprm['ftnreq'] ) )
-{
-    $req = base64_decode( $getprm['ftnreq'] );
+    $f = explode( '/', $url['path'] );
+    array_shift( $f );
+    array_shift( $f );
+    $req = [
+        'f' => implode(':', $f),
+        'p' => $getprm
+    ];
+    $req = json_encode( $req );
 }
 else
 {

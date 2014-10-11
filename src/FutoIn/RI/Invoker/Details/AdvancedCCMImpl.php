@@ -124,7 +124,7 @@ class AdvancedCCMImpl
             }
         }
         
-        $as->success( $req );
+        $as->success( (object)$req );
     }
     
     public function onMessageResponse( \FutoIn\AsyncSteps $as, $ctx, $rsp )
@@ -132,19 +132,7 @@ class AdvancedCCMImpl
         $info = $ctx->info;
         $func_info = $info->funcs[$ctx->name];
         
-        // Check raw result
-        if ( $func_info->rawresult )
-        {
-            $as->error( \FutoIn\Error::InternalError, "Raw result is expected" );
-        }
-    
-        // Check signature
-        if ( $info->creds === 'master' )
-        {
-            // TODO: check signature
-        }
-        
-        // Check for exeception
+        // Check for exception
         if ( isset( $rsp->e ) )
         {
             $error = $rsp->e;
@@ -158,6 +146,18 @@ class AdvancedCCMImpl
             {
                 $as->error( \FutoIn\Error::InternalError, "Not expected exception from Executor" );
             }
+        }
+        
+        // Check raw result
+        if ( $func_info->rawresult )
+        {
+            $as->error( \FutoIn\Error::InternalError, "Raw result is expected" );
+        }
+    
+        // Check signature
+        if ( $info->creds === 'master' )
+        {
+            // TODO: check signature
         }
         
         // check result variables

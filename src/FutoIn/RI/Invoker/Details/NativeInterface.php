@@ -70,11 +70,32 @@ class NativeInterface
             );
             
             $url = $this->raw_info->endpoint;
-            $req = json_encode( $req, JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE );
+            
+            if ( substr( $url, -1 ) !== '/' )
+            {
+                $url .= '/';
+            }
             
             if ( $upload_data )
             {
-                $url .= '?ftnreq='.base64_encode( $req );
+                // Encode according to FTN5: HTTP integration
+                //---
+
+                // iface / ver / func
+                $url .= str_replace( ':', '/', $req->f );
+                
+                // /sec
+                if ( isset( $req->sec ) )
+                {
+                    $url .= '/' . $req->sec;
+                }
+                
+                // Params as query
+                if ( isset( $req->p ) )
+                {
+                    $url .= '?' . http_build_query( (array) $req->p );
+                }
+                //---
             
                 if ( is_resource( $upload_data ) )
                 {
@@ -101,6 +122,7 @@ class NativeInterface
             }
             else
             {
+                $req = json_encode( $req, JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE );
                 $curl_opts[ CURLOPT_POST ] = true;
                 $curl_opts[ CURLOPT_POSTFIELDS ] = $req;
             }

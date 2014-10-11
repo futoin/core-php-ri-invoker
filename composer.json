@@ -1,6 +1,6 @@
 {
     "name" : "futoin/core-php-ri-invoker",
-    "version" : "0.3",
+    "version" : "0.4",
     "description" : "FutoIn Core Reference Implementation for PHP - Invoker",
     "authors" : [
         {
@@ -11,13 +11,13 @@
     "license" : "Apache-2.0",
     "homepage" : "http://futoin.org",
     "require" : {
-        "php" : ">=5.5",
-        "futoin/core-php-api" : "~0.4",
-        "futoin/core-php-ri-asyncsteps" : "~0.99.7",
+        "php" : "~5.5",
+        "futoin/core-php-api" : "~0.5.1",
+        "futoin/core-php-ri-asyncsteps" : "~0.99.8",
         "ext-json": "*"
     },
     "require-dev" : {
-        "phpunit/phpunit": ">=4.1",
+        "phpunit/phpunit": "~4.1",
         "phpunit/php-invoker": "*"
     },
     "autoload": {

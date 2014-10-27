@@ -23,6 +23,7 @@ class RegistrationInfo
     public $impl = null;
     public $aliases = null;
     public $secure_channel = false;
+    public $regname = null;
     
     public $inherits = null;
     public $funcs = null;

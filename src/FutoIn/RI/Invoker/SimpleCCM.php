@@ -37,22 +37,28 @@ class SimpleCCM
     /** @see \FutoIn\SimpleCCM */
     public function register( \FutoIn\AsyncSteps $as, $name, $ifacever, $endpoint, $credentials=null )
     {
-        if ( ! preg_match('/^([a-z][a-z0-9]*)(\\.[a-z][a-z0-9]*)+:[0-9]+\\.[0-9]+$/i', $ifacever ) )
-        {
-            $as->error_info = "Invalid ifacever";
-            throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
-        }
-    
-        $ifacever = explode( ':', $ifacever );
-        $mjrmnr = explode( '.', $ifacever[1] );
-        
         // Unregister First
         if ( array_key_exists( $name, $this->iface_info ) )
         {
-            $as->error_info = "Already registered";
-            throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
+            $as->error( \FutoIn\Error::InvokerError, "Already registered" );
         }
-        
+
+        // Check ifacever
+        if ( !preg_match('/^(([a-z][a-z0-9]*)(\\.[a-z][a-z0-9]*)+):(([0-9]+)\\.([0-9]+))$/', $ifacever, $m ) )
+        {
+            $as->error( \FutoIn\Error::InvokerError, "Invalid ifacever" );
+        }
+
+        $iface = $m[1];
+        $mjrmnr = $m[4];
+        $mjr = $m[5];
+        $mnr = $m[6];
+
+        if ( !is_string( $endpoint ) )
+        {
+            $as->error( \FutoIn\Error::InvokerError, "Invalid endpoint" );
+        }
+
         $endpoint = preg_replace( '/^secure\\+/', '', $endpoint, 1, $repcnt );
         $secure_channel = ( $repcnt > 0 );
         
@@ -60,31 +66,32 @@ class SimpleCCM
         $endpoint = preg_replace( '/^ws(s?):\\/\\//', 'http${1}://', $endpoint );
         
         if ( !$secure_channel &&
-             preg_match( '/^https:/', $endpoint ) )
+            preg_match( '/^https:/', $endpoint ) )
         {
             $secure_channel = true;
         }
         
-        
-        $info = new Details\RegistrationInfo;
-        $info->iface = $ifacever[0];
-        $info->version = $ifacever[1];
-        $info->mjrver = $mjrmnr[0];
-        $info->mnrver = $mjrmnr[1];
-        $info->endpoint = $endpoint;
-        $info->creds = $credentials;
-        $info->secure_channel = $secure_channel;
-        
         $url = parse_url( $endpoint );
-        
+    
         if ( $url['scheme'] === 'self' )
         {
-            $info->impl = str_replace( '.', '\\', $url['host'] );
+            $impl = str_replace( '.', '\\', $url['host'] );
         }
         else
         {
-            $info->impl = "\FutoIn\RI\Invoker\Details\NativeInterface";
+            $impl = "\FutoIn\RI\Invoker\Details\NativeInterface";
         }
+
+        $info = new Details\RegistrationInfo;
+        $info->iface = $iface;
+        $info->version = $mjrmnr;
+        $info->mjrver = $mjr;
+        $info->mnrver = $mnr;
+        $info->endpoint = $endpoint;
+        $info->creds = $credentials;
+        $info->secure_channel = $secure_channel;
+        $info->impl = $impl;
+        $info->regname = $name;
         
         $this->impl->onRegister( $as, $info );
         
@@ -101,13 +108,15 @@ class SimpleCCM
             throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
         }
         
-        if ( !isset( $this->iface_impl[$name] ) )
+        $regname = $this->iface_info[ $name ]->regname;
+        
+        if ( !isset( $this->iface_impl[$regname] ) )
         {
-            $info = $this->iface_info[$name];
-            $this->iface_impl[$name] = new $info->impl( $this->impl, $info );
+            $info = $this->iface_info[$regname];
+            $this->iface_impl[$regname] = new $info->impl( $this->impl, $info );
         }
         
-        return $this->iface_impl[$name];
+        return $this->iface_impl[$regname];
     }
     
     /** @see \FutoIn\SimpleCCM */
@@ -116,8 +125,9 @@ class SimpleCCM
         if ( array_key_exists( $name, $this->iface_info ) )
         {
             $info = &$this->iface_info[$name];
-            unset( $this->iface_info[$name] );
-            unset( $this->iface_impl[$name] );
+            $regname = $info->regname;
+            unset( $this->iface_info[$regname] );
+            unset( $this->iface_impl[$regname] );
             
             if ( $info->aliases ) foreach ( $info->aliases as $v )
             {

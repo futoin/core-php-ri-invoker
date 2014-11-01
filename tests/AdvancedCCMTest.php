@@ -34,6 +34,7 @@ class AdvancedCCMTest extends SimpleCCMTest
         $this->as->add(
             function($as){
                 $this->ccm->register( $as, 'testA', 'test.ab:1.1', 'http://localhost:12345/ftn' );
+                $as->successStep();
             },
             function( $as, $err ){
                 $as->executed = true;
@@ -51,6 +52,7 @@ class AdvancedCCMTest extends SimpleCCMTest
     {
         $this->as->add(function( $as ){
             $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+            $as->successStep();
         });
         
         $this->as->add(
@@ -77,6 +79,7 @@ class AdvancedCCMTest extends SimpleCCMTest
     {
         $this->as->add(function( $as ){
             $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+            $as->successStep();
         });
         
         $this->as->add(
@@ -103,6 +106,7 @@ class AdvancedCCMTest extends SimpleCCMTest
     {
         $this->as->add(function( $as ){
             $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+            $as->successStep();
         });
         
         $this->as->add(
@@ -129,6 +133,7 @@ class AdvancedCCMTest extends SimpleCCMTest
     {
         $this->as->add(function( $as ){
             $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+            $as->successStep();
         });
         
         $this->as->add(
@@ -155,6 +160,7 @@ class AdvancedCCMTest extends SimpleCCMTest
     {
         $this->as->add(function( $as ){
             $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+            $as->successStep();
         });
         
         $this->as->add(
@@ -181,6 +187,7 @@ class AdvancedCCMTest extends SimpleCCMTest
     {
         $this->as->add(function( $as ){
             $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+            $as->successStep();
         });
         
         $this->as->add(
@@ -207,6 +214,7 @@ class AdvancedCCMTest extends SimpleCCMTest
     {
         $this->as->add(function( $as ){
             $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
+            $as->successStep();
         });
         
         $this->as->executed = 0;
@@ -299,6 +307,7 @@ class AdvancedCCMTest extends SimpleCCMTest
     {
         $this->as->add(function( $as ){
             $this->ccm->register( $as, 'srv', 'test.b:2.3', 'http://localhost:12345/ftn' );
+            $as->successStep();
         });
         
         $this->as->add(

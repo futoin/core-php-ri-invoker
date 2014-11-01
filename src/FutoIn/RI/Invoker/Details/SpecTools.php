@@ -57,11 +57,12 @@ class SpecTools
         
         foreach( $info->funcs as $f )
         {
+            $f->min_args = 0;
+
             if ( isset( $f->params ) )
             {
                 $f->params = (array) $f->params;
-                $f->min_args = 0;
-                
+
                 foreach ( $f->params as $p )
                 {
                     if ( !isset( $p->type ) )
@@ -176,7 +177,13 @@ class SpecTools
             
             if ( $fdef->rawresult !== $info->funcs[$fn]->rawresult )
             {
-                $as->error( \FutoIn\Error::InternalError, "r'awresult flag' mismatch for '$fn'" );
+                $as->error( \FutoIn\Error::InternalError, "'rawresult' flag mismatch for '$fn'" );
+            }
+            
+            if ( $fdef->rawupload &&
+                 !$info->funcs[$fn]->rawupload )
+            {
+                $as->error( \FutoIn\Error::InternalError, "'rawupload' flag is missing for '$fn'" );
             }
         }
         
@@ -184,7 +191,9 @@ class SpecTools
         
         $info->inherits += $sup_info->inherits;
         
-        if ( count( array_diff( $sup_info->constraints, $info->constraints ) ) )
+        if ( count( array_diff(
+                array_keys( $sup_info->constraints ),
+                $raw_spec->requires ) ) )
         {
             $as->error( \FutoIn\Error::InternalError, "Missing constraints from inherited" );
         }

@@ -28,7 +28,7 @@ class NativeInterface
         $this->raw_info = $info;
     }
     
-    public function call( \FutoIn\AsyncSteps $as, $name, $params, $upload_data=null, $download_stream=null )
+    public function call( \FutoIn\AsyncSteps $as, $name, $params, $upload_data=null, $download_stream=null, $timeout=null )
     {
         $ctx = new \StdClass;
         $ctx->name = $name;
@@ -46,7 +46,7 @@ class NativeInterface
         
         // Perform request
         //---
-        $as->add(function($as, $req) use ( $ctx, $upload_data, $download_stream ) {
+        $as->add(function($as, $req) use ( $ctx, $upload_data, $download_stream, $timeout ) {
             $curl_opts = array(
                 CURLOPT_FORBID_REUSE => FALSE,
                 CURLOPT_FRESH_CONNECT => FALSE,
@@ -150,7 +150,15 @@ class NativeInterface
             
             // cURL multi
             //---
-            $as->setTimeout( $curl_opts[CURLOPT_TIMEOUT_MS] * 1e3 );
+            if ( $timeout === null )
+            {
+                $timeout = $curl_opts[CURLOPT_TIMEOUT_MS];
+            }
+            
+            if ( (int)$timeout > 0 )
+            {
+                $as->setTimeout( $timeout );
+            }
 
             $as->add(function($as) use ( $curl ){
                 $this->ccmimpl->multiCurlAdd( $as, $curl );

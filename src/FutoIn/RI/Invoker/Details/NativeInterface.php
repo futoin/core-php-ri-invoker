@@ -255,6 +255,11 @@ class NativeInterface
         
         $func_info = $funcs[$name];
         
+        if ( $func_info->rawupload )
+        {
+            $as->error( \FutoIn\Error::InvokerError, "Raw upload is required, use call() instead" );
+        }
+        
         // Check for too many args
         if ( empty( $func_info->params ) && count( $args ) )
         {

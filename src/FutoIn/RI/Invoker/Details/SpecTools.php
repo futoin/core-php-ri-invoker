@@ -34,21 +34,29 @@ class SpecTools
         
         foreach ( $specdirs as $v )
         {
-            $v = $v . DIRECTORY_SEPARATOR . $fn;
-
-            if ( file_exists( $v ) )
+            if ( is_string( $v ) )
             {
-                $raw_spec = file_get_contents( $v );
-                $raw_spec = json_decode( $raw_spec );
+                $v = $v . DIRECTORY_SEPARATOR . $fn;
+
+                if ( file_exists( $v ) )
+                {
+                    $v = file_get_contents( $v );
+                    $v = json_decode( $v );
+                }
+            }
+            
+            if ( is_object( $v ) &&
+                 ( $info->iface === (string)$v->iface ) &&
+                 ( $info->version === (string)$v->version ) &&
+                 isset( $v->funcs ) &&
+                 is_object( $v->funcs ) )
+            {
+                $raw_spec = $v;
                 break;
             }
         }
         
-        if ( !$raw_spec ||
-             ( $info->iface != (string)$raw_spec->iface ) ||
-             ( $info->version != (string)$raw_spec->version ) ||
-             !isset( $raw_spec->funcs ) ||
-             !is_object( $raw_spec->funcs ) )
+        if ( !$raw_spec )
         {
             $as->error( \FutoIn\Error::InternalError, "Failed to load valid spec for ".$info->iface.":".$info->version );
         }
@@ -149,25 +157,35 @@ class SpecTools
             $sup_params = $fdef->params;
             $params = $info->funcs[$fn]->params;
             
-            // Verify parameters are correctly duplicated
-            foreach ( $sup_params as $pn => $pv )
+            $sup_params_keys = array_keys( $sup_params );
+            $params_keys = array_keys( $params );
+            
+            if ( count( $params ) < count( $sup_params_keys ) )
             {
-                if ( !isset( $params[$pn] ) )
+                $as->error( \FutoIn\Error::InternalError, "Invalid param count for '$fn'" );
+            }
+            
+            // Verify parameters are correctly duplicated
+            for ( $i = 0; $i < count( $sup_params_keys ); ++$i )
+            {
+                $pn = $sup_params_keys[ $i ];
+
+                if ( $pn !== $params_keys[ $i ] )
                 {
-                    $as->error( \FutoIn\Error::InternalError, "Missing func param '$fn/$pn'" );
+                    $as->error( \FutoIn\Error::InternalError, "Invalid param order for '$fn/$pn'" );
                 }
                 
-                if ( $pv->type !== $params[$pn]->type )
+                if ( $sup_params[$pn]->type !== $params[$pn]->type )
                 {
                     $as->error( \FutoIn\Error::InternalError, "Param type mismatch '$fn/$pn'" );
                 }
-                
-                unset( $params[$pn] );
             }
             
             // Verify that all added params have default value
-            foreach( $params as $pn => $pv )
+            for ( ; $i < count( $params_keys ); ++$i )
             {
+                $pn = $params_keys[ $i ];
+
                 // NULL is allowed as well
                 if ( !property_exists( $params[$pn], 'default' ) )
                 {

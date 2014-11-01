@@ -27,7 +27,7 @@ class AdvancedCCM
     /** cURL options to override some of the default values, like timeouts */
     const OPT_CURL = 'curl';
     
-    /** array of directories where to search for iface specs named by FTN3 standard
+    /** Array of json instances or directories where to search for iface specs named by FTN3 standard.
         
         Note: It can be URL, if supported by file_get_contents(), but discouraged
     */

@@ -260,12 +260,6 @@ class NativeInterface
             $as->error( \FutoIn\Error::InvokerError, "Raw upload is required, use call() instead" );
         }
         
-        // Check for too many args
-        if ( empty( $func_info->params ) && count( $args ) )
-        {
-            $as->error( \FutoIn\Error::InvokerError, "Unknown parameters" );
-        }
-        
         $keys = array_keys( $func_info->params );
         
         if ( count( $args ) > count( $keys ) )

@@ -65,7 +65,6 @@ class NativeInterface
             $curl = curl_init();
             
             $headers = array(
-                "Content-Type: application/octet-stream",
                 "Accept: application/futoin+json, */*"
             );
             
@@ -108,20 +107,23 @@ class NativeInterface
                     $curl_opts[ CURLOPT_CUSTOMREQUEST ] = "POST";
                     $curl_opts[ CURLOPT_INFILE ] = $upload_data;
                     $curl_opts[ CURLOPT_INFILESIZE ] = $upload_size;
-                    $headers['Content-Length'] = $upload_size;
                     
                     # Disable cURL-specific 1 second delay (empty 'Expect' does not work)
                     $curl_opts[ CURLOPT_HTTP_VERSION ] = CURL_HTTP_VERSION_1_0;
                 }
                 else
                 {
-                    $headers['Content-Length'] = strlen( $upload_data );
+                    $upload_size = strlen( $upload_data );
                     $curl_opts[ CURLOPT_POST ] = true;
                     $curl_opts[ CURLOPT_POSTFIELDS ] = $upload_data;
                 }
+                
+                $headers[] = "Content-Type: application/octet-stream";
+                $headers[] = 'Content-Length: ' . $upload_size;
             }
             else
             {
+                $headers[] = "Content-Type: application/futoin+json";
                 $req = json_encode( $req, JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE );
                 $curl_opts[ CURLOPT_POST ] = true;
                 $curl_opts[ CURLOPT_POSTFIELDS ] = $req;

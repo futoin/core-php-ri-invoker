@@ -93,9 +93,9 @@ class SimpleCCM
         $info->impl = $impl;
         $info->regname = $name;
         
-        $this->impl->onRegister( $as, $info );
-        
         $this->iface_info[$name] = $info;
+        
+        $this->impl->onRegister( $as, $info );
     }
     
     /** @see \FutoIn\SimpleCCM */
@@ -124,12 +124,21 @@ class SimpleCCM
         {
             $info = &$this->iface_info[$name];
             $regname = $info->regname;
-            unset( $this->iface_info[$regname] );
-            unset( $this->iface_impl[$regname] );
             
-            if ( $info->aliases ) foreach ( $info->aliases as $v )
+            if ( $regname === $name )
             {
-                unset( $this->iface_info[$v] );
+                unset( $this->iface_info[$regname] );
+                unset( $this->iface_impl[$regname] );
+                
+                if ( $info->aliases ) foreach ( $info->aliases as $v )
+                {
+                    unset( $this->iface_info[$v] );
+                }
+            }
+            else
+            {
+                unset( $this->iface_info[$name] );
+                array_splice( $info->aliases, array_search( $name, $info->aliases, true ) );
             }
         }
         else

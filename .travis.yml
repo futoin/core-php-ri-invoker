@@ -8,4 +8,4 @@ matrix:
 before_script:
   - bash .travis_install.sh
   - composer install
-script: phpunit
+script: vendor/bin/phpunit

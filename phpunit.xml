@@ -25,6 +25,7 @@
         <testsuite name="Core RI Invoker">
             <file>tests/BootstrapTest.php</file>
             <file>tests/SimpleCCMTest.php</file>
+            <file>tests/AdvancedCCMTest.php</file>
         </testsuite>
         
         <testsuite name="Core RI AsyncSteps">

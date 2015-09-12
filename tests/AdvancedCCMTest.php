@@ -296,10 +296,19 @@ class AdvancedCCMTest extends SimpleCCMTest
     
     public function testSecureChannel()
     {
-        $this->as->add(function( $as ){
-            $this->ccm->register( $as, 'srv', 'test.b:2.3', 'http://localhost:12345/ftn' );
-        });
+        $this->as->executed = false;
+
+        $this->as->add(
+            function( $as ){
+                $this->ccm->register( $as, 'srv', 'test.b:2.3', 'http://localhost:12345/ftn' );
+            },
+            function( $as, $err ){
+                $this->assertEquals( 'SecurityError', $err );
+                $this->assertTrue( strpos($as->error_info, "SecureChannel is required" ) === 0 );
+                $as->executed = true;
+            });
         
+        // Left just in case
         $this->as->add(
             function($as){
                 $iface = $this->ccm->iface( 'srv' );

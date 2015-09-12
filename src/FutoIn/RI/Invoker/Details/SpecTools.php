@@ -245,7 +245,7 @@ class SpecTools
         }
     }
     
-    public static checkConsistency( $as, $info )
+    public static function checkConsistency( $as, $info )
     {
     }
 }

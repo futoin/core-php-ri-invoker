@@ -17,8 +17,7 @@ class AdvancedCCMTest extends SimpleCCMTest
     {
         $this->as = new \FutoIn\RI\ScopedSteps();
         $this->ccm = new AdvancedCCM(array(
-            AdvancedCCM::OPT_SPEC_DIRS => __DIR__ . DIRECTORY_SEPARATOR . 'specs',
-            AdvancedCCM::OPT_VAULT => null,
+            'specDirs' => __DIR__ . DIRECTORY_SEPARATOR . 'specs',
         ));
     }
     

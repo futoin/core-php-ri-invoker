@@ -103,6 +103,15 @@ class SimpleCCMImpl
     
     public function onRegister( \FutoIn\AsyncSteps $as, $info )
     {
+        if ( $info->creds_master || $info->creds_hmac )
+        {
+            $as->error( \FutoIn\Error::InvokerError, "Master/HMAC is supported only in AdvancedCCM" );
+        }
+
+        $info->funcs = [];
+        $info->inherits = [];
+        $info->constraints = [];
+        $info->simple_req = true;
     }
     
     public function createMessage( \FutoIn\AsyncSteps $as, $ctx, $params )

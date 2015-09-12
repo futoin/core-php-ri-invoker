@@ -244,4 +244,8 @@ class SpecTools
             $as->error( \FutoIn\Error::InvalidRequest, "Type mismatch for parameter" );
         }
     }
+    
+    public static checkConsistency( $as, $info )
+    {
+    }
 }

@@ -19,6 +19,8 @@ class RegistrationInfo
     public $mnrver = null;
     public $endpoint = null;
     public $creds = null;
+    public $creds_master = null;
+    public $creds_hmac = null;
     public $def = null;
     public $impl = null;
     public $aliases = null;
@@ -29,4 +31,5 @@ class RegistrationInfo
     public $funcs = null;
     public $constraints = null;
     public $options = null;
+    public $simple_req = false;
 }

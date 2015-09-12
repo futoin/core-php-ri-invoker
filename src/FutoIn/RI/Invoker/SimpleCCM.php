@@ -68,7 +68,7 @@ class SimpleCCM
         $endpoint = preg_replace( '/^ws(s?):\\/\\//', 'http${1}://', $endpoint );
         
         if ( !$secure_channel &&
-            preg_match( '/^https:/', $endpoint ) )
+            preg_match( '/^(https|wss|unix):/', $endpoint ) )
         {
             $secure_channel = true;
         }
@@ -103,6 +103,34 @@ class SimpleCCM
         $this->impl->onRegister( $as, $info );
 
         $as->add( function( $as ) use ( $name, $ifacever, $info ) {
+            if ( !$info->simple_req )
+            {
+                if ( !isset( $info->constraints['AllowAnonymous'] ) &&
+                    !$info->creds )
+                {
+                    $as->error( \FutoIn\Error::SecurityError, "Requires authenticated user" );
+                }
+
+                if ( isset( $info->constraints['SecureChannel'] ) &&
+                    !$info->secure_channel )
+                {
+                    $as->error( \FutoIn\Error::SecurityError, "SecureChannel is required" );
+                }
+
+                if ( isset( $info->constraints['MessageSignature'] ) &&
+                    !$info->creds_master &&
+                    !$info->creds_hmac )
+                {
+                    $as->error( \FutoIn\Error::SecurityError, "SecureChannel is required" );
+                }
+
+                if ( isset( $info->constraints['BiDirectChannel'] ) &&
+                    !false/*is_bidirect*/ )
+                {
+                    $as->error( \FutoIn\Error::InvokerError, "BiDirectChannel is required" );
+                }
+            }
+        
             $this->emit( 'register', [ $name, $ifacever, $info ] );
         } );
     }

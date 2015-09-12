@@ -21,21 +21,6 @@ class AdvancedCCM
     extends SimpleCCM
     implements \FutoIn\Invoker\AdvancedCCM
 {
-    /** Secure Vault instance, if Master Service/Client model is used */
-    const OPT_VAULT = 'vault';
-    
-    /** cURL options to override some of the default values, like timeouts */
-    const OPT_CURL = 'curl';
-    
-    /** Array of json instances or directories where to search for iface specs named by FTN3 standard.
-        
-        Note: It can be URL, if supported by file_get_contents(), but discouraged
-    */
-    const OPT_SPEC_DIRS = 'specdirs';
-    
-    /** Disable extra sanity checks for production mode performance */
-    const OPT_PROD_MODE = 'prodmode';
-
     /**
      * Construct
      *

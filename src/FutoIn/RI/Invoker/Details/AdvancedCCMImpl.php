@@ -18,14 +18,14 @@ class AdvancedCCMImpl
     {
         parent::__construct( $options );
         
-        if ( isset( $options[AdvancedCCM::OPT_SPEC_DIRS] ) )
+        if ( isset( $options['specDirs'] ) )
         {
-            $this->specdirs = (array)$options[AdvancedCCM::OPT_SPEC_DIRS];
+            $this->specdirs = (array)$options['specDirs'];
         }
         
-        if ( isset( $options[AdvancedCCM::OPT_PROD_MODE] ) )
+        if ( isset( $options['prodMode'] ) )
         {
-            $this->development_checks = !$options[AdvancedCCM::OPT_PROD_MODE];
+            $this->development_checks = !$options['prodMode'];
         }
     }
 
@@ -33,6 +33,11 @@ class AdvancedCCMImpl
     public function onRegister( \FutoIn\AsyncSteps $as, $info )
     {
         SpecTools::loadSpec( $as, $info, $this->specdirs );
+
+        if ( $this->development_checks )
+        {
+            SpecTools::checkConsistency( $as, $info );
+        }
     }
     
     public function checkParams( \FutoIn\AsyncSteps $as, $ctx, $params )

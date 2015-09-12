@@ -1,6 +1,6 @@
 {
     "name" : "futoin/core-php-ri-invoker",
-    "version" : "0.4",
+    "version" : "0.5",
     "description" : "FutoIn Core Reference Implementation for PHP - Invoker",
     "authors" : [
         {

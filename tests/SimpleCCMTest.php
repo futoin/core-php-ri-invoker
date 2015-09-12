@@ -76,9 +76,9 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
             function($as){
                 $this->ccm->register( $as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
                 $this->ccm->register( $as, 'testB', 'test.b:2.3', 'http://localhost:12345/ftn/', 'userX:passX' );
-                $as->successStep();
             },
             function($as,$err){
+                error_log( "$err:{$as->error_info}" );
                 $this->assertFalse( true );
             }
         );
@@ -105,7 +105,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
         $this->as->add(
             function($as){
                 $this->ccm->register( $as, 'testA', 'test.a:1.', 'http://localhost:12345/ftn' );
-                $as->successStep();
             },
             function( $as, $err ){
                 $as->executed = true;
@@ -123,7 +122,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
         $this->as->add(
             function($as){
                 $this->ccm->register( $as, 'testA', 'test.a:2', 'http://localhost:12345/ftn' );
-                $as->successStep();
             },
             function( $as, $err ){
                 $as->executed = true;
@@ -141,7 +139,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
         $this->as->add(
             function($as){
                 $this->ccm->register( $as, 'testA', 'test.a', 'http://localhost:12345/ftn' );
-                $as->successStep();
             },
             function( $as, $err ){
                 $as->executed = true;
@@ -163,7 +160,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {
         $this->as->add(function($as){
             $this->ccm->register( $as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
-            $as->successStep();
         });
         $this->as->run();
 
@@ -177,7 +173,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {
         $this->as->add(function($as){
             $this->ccm->register( $as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
-            $as->successStep();
         });
         $this->as->run();
             
@@ -191,7 +186,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {
         $this->as->add(function($as){
             $this->ccm->register( $as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
-            $as->successStep();
         });
         $this->as->run();
             
@@ -202,7 +196,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {
         $this->as->add(function($as){
             $this->ccm->register( $as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
-            $as->successStep();
         });
         $this->as->run();
         
@@ -224,7 +217,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {
         $this->as->add(function($as){
             $this->ccm->register( $as, '#defense', 'test.a:1.1', 'http://localhost:12345/ftn' );
-            $as->successStep();
         });
         $this->as->run();
 
@@ -235,7 +227,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {
         $this->as->add(function($as){
             $this->ccm->register( $as, '#log', 'test.a:1.1', 'http://localhost:12345/ftn' );
-            $as->successStep();
         });
         $this->as->run();
             
@@ -246,8 +237,7 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {
         $this->as->add(function($as){
             $this->ccm->register( $as, 'testA', 'test.a:1.1', 'http://localhost:12345/ftn' );
-            $as->successStep();
-        });
+});
         $this->as->run();
 
             
@@ -262,15 +252,13 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {
         $this->as->add(function( $as ){
             $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
-            $as->successStep();
         })->add(
             function($as){
                 $iface = $this->ccm->iface( 'srv' );
                 $iface->call( $as, 'test', array( 'ping' => 'PINGPING' ) );
             },
             function( $as, $err ){
-                var_dump( $err );
-                var_dump( $as->error_info );
+                error_log( "$err:{$as->error_info}" );
                 $as->executed = false;
             }
         )->add(
@@ -289,7 +277,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {
         $this->as->add(function( $as ){
             $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
-            $as->successStep();
         });
       
         # Output data
@@ -375,7 +362,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {
         $this->as->add(function( $as ){
             $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
-            $as->successStep();
         });
         
         # Output data
@@ -411,7 +397,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {
         $this->as->add(function( $as ){
             $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
-            $as->successStep();
         });
         
         $this->as->add(
@@ -438,7 +423,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
         $this->as->add(function( $as ){
             $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
             $this->ccm->alias( 'srv', 'asrv' );
-            $as->successStep();
         });
         
         $this->as->add(
@@ -464,7 +448,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {
         $this->as->add(function( $as ){
             $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
-            $as->successStep();
         });
         
         $this->as->add(
@@ -490,7 +473,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {
         $this->as->add(function( $as ){
             $this->ccm->register( $as, 'srv', 'srv.testa:1.1', 'http://localhost:12345/ftn' );
-            $as->successStep();
         });
 
         
@@ -517,7 +499,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {
         $this->as->add(function( $as ){
             $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
-            $as->successStep();
         });
         
         $this->as->add(
@@ -543,7 +524,6 @@ class SimpleCCMTest extends PHPUnit_Framework_TestCase
     {   
         $this->as->add(function($as){
             $this->ccm->register( $as, 'srv', 'srv.test:1.1', 'http://localhost:12345/ftn' );
-            $as->successStep();
         });
         $this->as->run();
         

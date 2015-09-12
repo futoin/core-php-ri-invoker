@@ -16,6 +16,8 @@ namespace FutoIn\RI\Invoker\Details;
 class NativeInterface
     implements \FutoIn\Invoker\NativeInterface
 {
+    use \Sabre\Event\EventEmitterTrait;
+
     const MSG_MAXSIZE = 65536;
 
     private $ccmimpl;
@@ -218,11 +220,6 @@ class NativeInterface
         }
         
         return $this->iface_info;
-    }
-    
-    public function burst()
-    {
-        throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
     }
     
     public function bindDerivedKey( \FutoIn\AsyncSteps $as )

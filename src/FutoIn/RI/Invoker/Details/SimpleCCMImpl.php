@@ -10,11 +10,15 @@ class SimpleCCMImpl
 {
     public $curl_opts;
     public $curl_mh;
+    public $options;
     private $curl_cb = [];
     private $curl_event = null;
     
-    public function __construct( VaultProvider $vault=null, $curl_opts = null )
+    public function __construct( $options = null )
     {
+        $this->options = $options;
+
+        $curl_opts = null;
         $this->curl_opts = $curl_opts ? $curl_opts : [];
         
         // TODO: cURL "eventization" with libevent/libev/libuv and integration with AsyncSteps loop
@@ -90,7 +94,7 @@ class SimpleCCMImpl
     
     public function multiCurlSelect()
     {
-        // Yes, very very dirty. cURL integration with event loop is required
+        // TODO: Yes, very very dirty. cURL integration with event loop is required
         $timeout = 0.01;
         curl_multi_select( $this->curl_mh, $timeout );
         $this->multiCurlPoll();

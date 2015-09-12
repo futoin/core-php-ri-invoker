@@ -20,6 +20,8 @@ namespace FutoIn\RI\Invoker;
 class SimpleCCM
     implements \FutoIn\Invoker\SimpleCCM
 {
+    use \Sabre\Event\EventEmitterTrait;
+    
     protected $iface_info = [];
     protected $iface_impl = [];
     protected $impl = null;
@@ -29,13 +31,13 @@ class SimpleCCM
      *
      * @param array $curl_opts - Name-Value pairs for curl_setopt()
      */
-    public function __construct( VaultProvider $vault=null, $curl_opts = null )
+    public function __construct( array $options = [] )
     {
-        $this->impl = new Details\SimpleCCMImpl( $vault, $curl_opts );
+        $this->impl = new Details\SimpleCCMImpl( $options );
     }
 
     /** @see \FutoIn\SimpleCCM */
-    public function register( \FutoIn\AsyncSteps $as, $name, $ifacever, $endpoint, $credentials=null )
+    public function register( \FutoIn\AsyncSteps $as, $name, $ifacever, $endpoint, $credentials=null, $options=null )
     {
         // Unregister First
         if ( array_key_exists( $name, $this->iface_info ) )
@@ -81,6 +83,8 @@ class SimpleCCM
         {
             $impl = "\FutoIn\RI\Invoker\Details\NativeInterface";
         }
+        
+        $options = array_merge( (array)$options, $this->impl->options );
 
         $info = new Details\RegistrationInfo;
         $info->iface = $iface;
@@ -92,10 +96,15 @@ class SimpleCCM
         $info->secure_channel = $secure_channel;
         $info->impl = $impl;
         $info->regname = $name;
+        $info->options = &$options;
         
         $this->iface_info[$name] = $info;
         
         $this->impl->onRegister( $as, $info );
+
+        $as->add( function( $as ) use ( $name, $ifacever, $info ) {
+            $this->emit( 'register', [ $name, $ifacever, $info ] );
+        } );
     }
     
     /** @see \FutoIn\SimpleCCM */
@@ -122,7 +131,7 @@ class SimpleCCM
     {
         if ( array_key_exists( $name, $this->iface_info ) )
         {
-            $info = &$this->iface_info[$name];
+            $info = $this->iface_info[$name];
             $regname = $info->regname;
             
             if ( $regname === $name )
@@ -140,6 +149,8 @@ class SimpleCCM
                 unset( $this->iface_info[$name] );
                 array_splice( $info->aliases, array_search( $name, $info->aliases, true ) );
             }
+            
+            $this->emit( 'unregister', [ $name, $info ] );
         }
         else
         {
@@ -160,25 +171,7 @@ class SimpleCCM
     }
     
     /** @see \FutoIn\SimpleCCM */
-    public function burst()
-    {
-        throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
-    }
-    
-    /** @see \FutoIn\SimpleCCM */
-    public function cacheL1()
-    {
-        throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
-    }
-
-    /** @see \FutoIn\SimpleCCM */
-    public function cacheL2()
-    {
-        throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
-    }
-
-    /** @see \FutoIn\SimpleCCM */
-    public function cacheL3()
+    public function cache( $bucket = 'default' )
     {
         throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
     }
@@ -214,17 +207,31 @@ class SimpleCCM
         {
             throw new \FutoIn\Error( \FutoIn\Error::InvokerError );
         }
-        
-        $this->iface_info[$alias] = &$this->iface_info[$name];
-        
-        if ( is_array( $this->iface_info[$name]->aliases ) )
+
+        $info = $this->iface_info[$name];
+        $this->iface_info[$alias] = $info;
+
+        if ( is_array( $info->aliases ) )
         {
-            $this->iface_info[$name]->aliases[] = $alias;
+            $info->aliases[] = $alias;
         }
         else
         {
-            $this->iface_info[$name]->aliases = [$alias];
+            $info->aliases = [$alias];
         }
+        
+        $this->emit( 'register', [ $alias, $info->iface . ':' . $info->version, $info ] );
+    }
+    
+    /** @see \FutoIn\SimpleCCM */
+    public function close()
+    {
+        foreach ( $this->iface_impl as $impl )
+        {
+            $impl->emit( 'close' );
+        }
+
+        $this->emit( 'close' );
     }
     
     /** @internal */
@@ -233,3 +240,20 @@ class SimpleCCM
         throw new \FutoIn\Error( \FutoIn\Error::InternalError );
     }
 }
+
+/**
+ * CCM regiser event. Fired on new interface registration.
+ * ( name, ifacever, info )
+ * @event SimpleCCM#register
+ */
+
+/**
+ * CCM regiser event. Fired on interface unregistration.
+ * ( name, info )
+ * @event SimpleCCM#unregister
+ */
+
+/**
+ * CCM close event. Fired on CCM shutdown.
+ * @event SimpleCCM#close
+ */

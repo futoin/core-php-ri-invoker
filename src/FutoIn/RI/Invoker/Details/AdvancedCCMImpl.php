@@ -16,12 +16,7 @@ class AdvancedCCMImpl
     
     public function __construct( $options )
     {
-        parent::__construct(
-            isset( $options[AdvancedCCM::OPT_VAULT] )
-                    ? $options[AdvancedCCM::OPT_VAULT] : null,
-            isset( $options[AdvancedCCM::OPT_CURL] )
-                    ? $options[AdvancedCCM::OPT_CURL] : null
-        );
+        parent::__construct( $options );
         
         if ( isset( $options[AdvancedCCM::OPT_SPEC_DIRS] ) )
         {

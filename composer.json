@@ -14,7 +14,8 @@
         "php" : "~5.5",
         "futoin/core-php-api" : "^0.7",
         "futoin/core-php-ri-asyncsteps" : "^1.1",
-        "ext-json": "*"
+        "ext-json": "*",
+        "sabre/event": "^2.0.2"
     },
     "require-dev" : {
         "phpunit/phpunit": "*",

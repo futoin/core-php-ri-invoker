@@ -41,7 +41,7 @@ class AdvancedCCM
      *
      * @param array $curl_opts - Name-Value pairs for curl_setopt()
      */
-    public function __construct( array $options )
+    public function __construct( array $options = [] )
     {
         $this->impl = new Details\AdvancedCCMImpl( $options );
     }

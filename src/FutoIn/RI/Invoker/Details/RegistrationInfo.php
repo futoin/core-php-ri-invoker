@@ -28,4 +28,5 @@ class RegistrationInfo
     public $inherits = null;
     public $funcs = null;
     public $constraints = null;
+    public $options = null;
 }
